@@ -26,6 +26,8 @@ namespace None {
 // }}}
 // Simple_Text_Frontend {{{
 namespace Simple_Text_Frontend {
+  // TODO: move to config file (maybe?)
+  // NOTE: edit to configure the keybindings
 #define KEYS  \
     X(QUIT,   'q',  "Quit Frontend.") \
     X(HELP,   'h',  "Prints help text.") \
@@ -88,13 +90,13 @@ namespace Simple_Text_Frontend {
     else
       start = pc - sub;
 
-    int end = start+frame_len;
+    unsigned int end = start+frame_len;
     if (end > cap)
       end = cap;
 
 
     std::cout << "I: ";
-    for (int x=start; x<end; x++) {
+    for (unsigned int x=start; x<end; x++) {
       if (x == pc) {
         std::cout
           << C::BLUE << "["
@@ -108,11 +110,7 @@ namespace Simple_Text_Frontend {
         << C::BLUE << "]" << C::RESET;
     }
     std::cout << "\n   ";
-    for (int x=start; x<end; x++) {
-      if (x<0) {
-        std::cout << "```";
-        continue;
-      }
+    for (unsigned int x=start; x<end; x++) {
       std::cout << "`" << x%9+1 << "`";
     }
     std::cout << endl;
@@ -136,8 +134,6 @@ namespace Simple_Text_Frontend {
     bool user_guided = true;
     bool ret = true;
     int help = false;
-    int screen_width = 80;
-    int len = screen_width-1;
     unsigned int skip_i = 0;
     unsigned int skip = 0;
     unsigned int wait = 0;
@@ -156,7 +152,7 @@ namespace Simple_Text_Frontend {
 
         C::clear();
 
-        len = got_vm.inspect_buffer(-1);
+        got_vm.inspect_buffer(-1);
         inspect_instructions(backend, got_vm.ins_max, got_vm.ins_i);
         std::cout << "\nOutput: " << got_vm.output;
 
@@ -165,7 +161,7 @@ namespace Simple_Text_Frontend {
         std::cout << endl;
 
       }
-      ret = backend.execute_step();
+      ret = got_vm.step();
     }
     C::show_cursor();
 
@@ -180,7 +176,8 @@ namespace Simple_Text_Frontend {
 // Frontend {{{
 namespace Frontend {
 	namespace {
-
+    // TODO: move to config file
+    // NOTE: Configure to add a frontend.
 #define CONFIG  \
     X(NONE,         None::frontend)  \
     X(TERM_SIMPLE,  Simple_Text_Frontend::frontend)

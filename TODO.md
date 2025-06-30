@@ -1,18 +1,18 @@
 # v1.0.0 - Works with basic frontend
 
-- [ ] Backend
-    - [ ] VM
+- [x] Backend
+    - [x] VM
         - [x] Implement
         - [x] Use array for functions
         - [x] fix: inspect_instructions() crash; read outside backend.program string.
         - [x] fix: get_file()
-        - [ ] fix: interpreting bug
-        - [ ] fix: receiving input
+        - [x] fix: interpreting bug
+            - Using wrong variable to walk through instructions.
 - [x] Fontend
     - [x] Basic Terminal
         - [x] Implement
-        - [x] use: Inspect Buffer
-        - [x] add:use: Inspect Insturctions
+        - [x] use: inspect Buffer
+        - [x] add: inspect Insturctions
         - [x] Seperate frontend Functions
         - [x] Keybingings
             - [x] add: help text
@@ -20,34 +20,42 @@
 - [x] Utils
     - [x] Unwind
 
-- [ ] Main Program
-    - [ ] Add options
+- [x] Main Program
+    - [x] Add: options
         - [x] From file
         - [x] From cmd
         - [x] From stdin
         - [x] Run without a frontend
-        - [ ] Verbose: tell you what everything is before running it.
+        - [x] Verbose: tell you what everything is before running it.
+        - [x] version
 
-- [ ] Tests Pass
+- [x] Tests Pass
     - [x] Hello World
     - [x] [392quine.b](https://brainfuck.org/392quine.b)
-    - [ ] [bitwidth.b test](https://github.com/rdebath/Brainfuck/blob/master/bitwidth.b)
-- [ ] Package and Release
-    - [ ] add: makefile make releases
-    - [ ] Create Appimage
-    - [x] Logo
-    - [ ] add: github Releases
-- [ ] Wrap up
-    - [ ] Look at TODO's
+    - [x] [bitwidth.b test](https://github.com/rdebath/Brainfuck/blob/master/bitwidth.b)
+- [x] Package and Release
+    - [x] add: makefile make releases
+    - [x] add: logo
+    - [x] add: github Releases
+- [x] Wrap up
+    - [x] Write README.md: Usage
+    - [x] Detect Unused Code
+    - [x] Look at TODO's
+    - [x] Update Version Number
 
 # Ideas
 
 - ALL
     - Move Define Configuration options macros to "config.hpp"
+    - Write docs on creating frontends
+    - Write docs on creating backend
 - Main
     - Option to output parsed file
     - REPL for BF
+    - Verbose levels
 - Backend
+    - Remove need for seek and seekb operations.
+        - Have rule for the charactors to seek in those functions
     - Step Back one step
     - Optimize
     - Convert necessary variables to unsigned long

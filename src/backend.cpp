@@ -9,31 +9,23 @@
 /* VM {{{ */
 class VM {
 public:
-  //TODO: remove if not used.
-  //union Instructions {
-  //  struct {
-  //    unsigned char op;   // Operator
-  //    unsigned char opr;  // Operand: Extra information
-  //  };
-  //  unsigned int instruction;
-  //};
-
 	struct Rule {
 		char cmd;
 		vector<unsigned char> findex;
 	};
 	enum Funcs {
-		INC,
-		DEC,
-		RIGHT,
-		LEFT,
-		PRINT,
-		INPUT,
-		PUSH,	///< PUSH: push PC to stack.
-		POP,	///< POP: pop top PC value from stack and use it.
-		JZ,	///< Jump to top of stack if Zero
-		JNZ,	///< Jump to top of stack if Not-Zero
-		SEEK, // TODO: Remove
+		INC,    ///< INCrement data at program pointer
+		DEC,    ///< DECrement data at program pointer
+		RIGHT,  ///< move program pointer RIGHT
+		LEFT,   ///< move program pointer LEFT
+		PRINT,  ///< PRINT: put data at current pointer to screen
+		INPUT,  ///< INPUT: get input
+		PUSH,	  ///< PUSH: push PC to stack
+		POP,	  ///< POP: pop top PC value from stack and use it
+		JZ,	    ///< Jump to top of stack if Zero
+		JNZ,	  ///< Jump to top of stack if Not-Zero
+		SEEK,   ///< SEEK forward to a bracket
+		SEEKB,  ///< SEEK Backwards to a bracket
 		_FUNCS_LEN
 	};
 
@@ -69,24 +61,42 @@ private:
 
 	void f_push(void) {
 		if (!jump_list.empty()) {
-			if (jump_list.top() == ins_i) return;
+			if ((unsigned int)jump_list.top() == ins_i) return;
     }
 		jump_list.push(ins_i);
 	}
 	void f_pop(void) { if (!jump_list.empty()) jump_list.pop(); }
 
+  // TODO: remove need of this function.
 	void f_seek(void) {
 		if (buffer[pc] != 0) return;
 		int f=0;
-		for (int x=pc; x<BUF_LEN; x++) {
-			if (buffer[x] == ']') {
+		for (unsigned int x=ins_i+1; x<ins_max; x++) {
+			if (rules[instructions[x]].cmd == ']') {
 				if (f==0) {
-					pc=x;
+					ins_i=x;
 					return;
 				}
 				f--;
 			}
-			if (buffer[x] == '[')
+			if (rules[instructions[x]].cmd == '[')
+				f++;
+		}
+	}
+
+  // TODO: remove need of this function.
+	void f_seekb(void) {
+		if (buffer[pc] == 0) return;
+		int f=0;
+		for (ssize_t x=ins_i-1; x>=0; x--) {
+			if (rules[instructions[x]].cmd == '[') {
+				if (f==0) {
+					ins_i=x;
+					return;
+				}
+				f--;
+			}
+			if (rules[instructions[x]].cmd == ']')
 				f++;
 		}
 	}
@@ -117,16 +127,13 @@ private:
 		[JZ]	  = &VM::f_jz,
 		[JNZ]	  = &VM::f_jnz,
 		[SEEK]  = &VM::f_seek,
+		[SEEKB] = &VM::f_seekb,
 	};
 
 	/* }}} */
 
-  //TODO: remove if not used.
-	void run_funcs(unsigned char& op, unsigned char& opr) {
-	//void run_funcs(Rule& r) {
+	void run_funcs(Rule& r) {
 
-    //TODO: remove if not used.
-		//for (auto i : rules[op]) {
 		for (auto i : r.findex) {
 
 #ifdef DEBUG
@@ -135,19 +142,7 @@ private:
 				<< "  " << r.findex.size()
 				<< "  " << pc << " " << jump_list.empty();
 #endif
-      //TODO: remove if not used.
-      //switch (i) {
-      //  case INC:   buffer[pc]++; break;
-      //  case DEC:   buffer[pc]--; break;
-      //  case RIGHT: pc++; pc%=BUF_LEN; break;
-      //  case LEFT:  pc--; pc%=BUF_LEN; break;
-      //  case PRINT: output += buffer[pc]; break;
-      //  case INPUT: buffer[pc] = getchar(); break;
-      //  case JZ:
-      //  case JNZ:
-      //}
-
-      if (0 <= i < _FUNCS_LEN) {
+      if (i < _FUNCS_LEN) {
         (this->*funcs[i])();
         continue;
       }
@@ -173,8 +168,6 @@ public:
 		if (ins_i >= ins_max)
 			return false;
 
-    //TODO: remove if not used.
-		//run_funcs(instructions[ins_i].op, instructions[ins_i].opr);
 		run_funcs(rules[instructions[ins_i]]);
     ins_i++;
 		return true;
@@ -184,7 +177,7 @@ public:
 	}
 
 
-	unsigned int inspect_buffer(int mwidth=100, int view_frame=14) {
+	unsigned int inspect_buffer(ssize_t mwidth=100, int view_frame=14) {
 		if (mwidth == -1) {
       mwidth = std::numeric_limits<int>::max();
     }
@@ -192,7 +185,7 @@ public:
 		int width=view_frame;
 		unsigned int out=5;
 		std::cout << total_steps << ": ";
-		int y=0;
+		unsigned int y=0;
 		for (int x=0; x<width && y<mwidth; x++,y++) {
 			if (buffer[y] != 0) {
 				x=0;
@@ -234,22 +227,24 @@ public:
 		rules.push_back({'-', {VM::DEC}			});
 		rules.push_back({'>', {VM::RIGHT}		});
 		rules.push_back({'<', {VM::LEFT}		});
-		rules.push_back({'[', {VM::PUSH,VM::SEEK}	});
-		rules.push_back({']', {VM::JNZ,	VM::POP}	});
+		rules.push_back({'[', {VM::SEEK}	});
+		rules.push_back({']', {VM::SEEKB}	});
 		rules.push_back({'.', {VM::PRINT}		});
 		rules.push_back({',', {VM::INPUT}		});
 
 		state = GET;
 	}
 
+  // TODO: add to arguments
 	void print_rules(void) {
 		if (state <= SET) return;
+    if (rules.size() <= 0)
+      Error::die("Invalid rule set");
 
 		std::cout << "(CMD, Actions)" << endl;
 		for (auto r : rules) {
 			std::cout << " " << r.cmd << " = {";
 			int len = r.findex.size()-1;
-			// TODO: check for zero.
 			if (len >= 1) {
 				for (; len>0; len--) {
 					std::cout << (unsigned int)r.findex[len] << ",";
@@ -342,7 +337,7 @@ private:
 	std::vector<unsigned char> instructions;
 	void convert_string2ir(std::string s) {
 		for (char c : s) {
-			for (int x=0; x<(rules.size()); x++) {
+			for (unsigned int x=0; x<(rules.size()); x++) {
 				if (rules[x].cmd == c) {
 					instructions.push_back(x);
 					break;
@@ -353,12 +348,11 @@ private:
 public:
 
 	// TODO: other methods of conversion from IR.
-	void convert(enum Conversion con=C_IR, std::string output="") {
+	void convert(enum Conversion con=C_IR /*,std::string output=""*/) {
 		STATE(CON);
 
-		if (!output.empty()) {
-			// TODO: add file out
-		}
+    // TODO: add file out
+		//if (!output.empty()) {}
 		conversion_method = con;
 		if (code.empty())
 			Error::die("Unable to interpret nothing. Code string is empty.");
@@ -381,7 +375,6 @@ private:
 	bool ir_vm_setup(void) {
 		if (rules.empty() || instructions.empty()) { Error::die("Invalid Rules and/or Instructions setup."); } 
 
-		// TODO: remove need
 		if (!vm_list.empty()) Error::die("TODO: cannot have multiple VM's at once.");
 
 		VM vm(rules, instructions);
@@ -403,14 +396,15 @@ private:
 		[C_IR] = { &Backend::ir_vm_step, &Backend::ir_vm_setup, &Backend:: ir_vm}
 	};
 public:
-	// TODO: hold and keep em to not become confused in other functions.
 	void execute_set() {
-		if ((this->*Exec_Funcs[0].init)() != true) { Error::die("Invalid Initalization"); }
+		if ((this->*Exec_Funcs[0].init)() != true) {
+      Error::die("Invalid Initalization");
+    }
 	}
 	bool execute_step() {
 		return (this->*Exec_Funcs[0].step)();
 	}
-	void execute(Conversion em=C_IR) {
+	void execute(/*Conversion em=C_IR*/) {
 		STATE(EXE);
 
 		execute_set();

@@ -3,6 +3,8 @@
 #include <signal.h>
 #include <cstring>
 
+#define _STR(x)	#x
+#define STR(x)	_STR(x)
 
 // Colors {{{
 namespace C {
@@ -24,12 +26,11 @@ namespace C {
 	INVERSE 	= 7,
 	};
 
+
 	void set_color(int a) {
     std::cout << "\033[" << a << "m";
 	}
-	void sc(int a) { set_color(a); }
 
-	// TODO: add enum list to index array for these
 	void clear(std::ostream& stream=std::cout) {
 		stream << "\033[2J\033[H";
 	}
@@ -58,7 +59,6 @@ namespace C {
 
 	std::ostream& operator<<(std::ostream& os, Colors a) {
 		os << "\033[" << (int)a << "m";
-		//os << "Test";
 		return os;
 	}
 }
@@ -101,7 +101,7 @@ namespace Unwind {
   }
 
   namespace {
-    void handle_sigint(int sig) {
+    void handle_sigint(int) {
 #ifdef DEBUG
       std::cerr << "Signal Caught: " << sig << endl;
 #endif
@@ -110,9 +110,13 @@ namespace Unwind {
     }
   }
   void signal_handler(void) {
-    struct sigaction sa = {0};
-    sa.sa_handler = &handle_sigint;
-    sa.sa_flags = SA_RESTART;
+    struct sigaction sa = {};
+
+    sa.sa_handler   = &handle_sigint;
+    sa.sa_sigaction = NULL;
+    sa.sa_flags     = SA_RESTART;
+    sa.sa_restorer  = NULL;
+
     sigaction(SIGINT, &sa, NULL);
   }
 
