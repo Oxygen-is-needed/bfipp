@@ -135,24 +135,10 @@ private:
 	void run_funcs(Rule& r) {
 
 		for (auto i : r.findex) {
-
-#ifdef DEBUG
-			std::cout << "CMD: " << r.cmd
-				<< " FINDEX: " << (unsigned int)i
-				<< "  " << r.findex.size()
-				<< "  " << pc << " " << jump_list.empty();
-#endif
       if (i < _FUNCS_LEN) {
         (this->*funcs[i])();
         continue;
       }
-
-#ifdef DEBUG
-      else {
-        std::cout << "NOP";
-      }
-			std::cout << endl;
-#endif
 		}
 	}
 public:
@@ -227,8 +213,8 @@ public:
 		rules.push_back({'-', {VM::DEC}			});
 		rules.push_back({'>', {VM::RIGHT}		});
 		rules.push_back({'<', {VM::LEFT}		});
-		rules.push_back({'[', {VM::SEEK}	});
-		rules.push_back({']', {VM::SEEKB}	});
+		rules.push_back({'[', {VM::SEEK}	  });
+		rules.push_back({']', {VM::SEEKB}	  });
 		rules.push_back({'.', {VM::PRINT}		});
 		rules.push_back({',', {VM::INPUT}		});
 

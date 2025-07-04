@@ -110,14 +110,20 @@ namespace Unwind {
     }
   }
   void signal_handler(void) {
-    struct sigaction sa = {};
+#ifdef _WIN32
+    signal(SIGINT,  handle_sigint);
+    signal(SIGTERM, handle_sigint);
+    signal(SIGABRT, handle_sigint);
+#else
+    struct sigaction sa;
 
     sa.sa_handler   = &handle_sigint;
-    sa.sa_sigaction = NULL;
     sa.sa_flags     = SA_RESTART;
-    sa.sa_restorer  = NULL;
 
-    sigaction(SIGINT, &sa, NULL);
+    sigaction(SIGINT,   &sa, NULL);
+    sigaction(SIGTERM,  &sa, NULL);
+    sigaction(SIGABRT,  &sa, NULL);
+#endif
   }
 
   void on_exit(void) {
