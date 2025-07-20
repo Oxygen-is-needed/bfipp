@@ -43,6 +43,57 @@
     - [x] Look at TODO's
     - [x] Update Version Number
 
+# v1.1.0
+
+- [ ] Fix
+    - [ ] Fix critics
+        - [ ] Use `.hpp` instead of `.cpp`
+        - [ ] Remove implicit NULL arguments
+        - [ ] Use `static_cast` preferably instead of `c` type casting
+        - [ ] Prefer not to use char*
+        - [ ] Ues `cerr << '\n'` when single new line is needed.
+            - Investigate better methods
+        - [ ] Use `nullptr` instead of `NULL`
+        - [ ] Prefer not to use anonymous namespaces
+    - [ ] Signal Catching
+
+- [ ] General
+    - [ ] Clean up code
+    - [ ] Add/Fix Logging
+        - [ ] with verbose logging levels as well
+    - [ ] Update rules
+        - [ ] holding more rules
+            - [ ] length of tape
+            - [ ] what happens at end of tape
+        - [ ] Pass to VM as constructor
+    - [ ] Create VM destructor
+    - [ ] Easier way to add front/backend
+    - [ ] Investigate mannor to load module for frontend/backend
+
+- [ ] Use Cmake instead of make
+
+- [ ] Documentation
+    - [ ] Improve README
+        - [ ] show default rules
+        - [ ] document how to add frontend
+        - [ ] document how to add backend
+    - [ ] `-H` | `--help-long` for longer help text.
+
+- [ ] Package and Release
+    - [ ] use cmake to create relaese in multiple formats
+        - [ ] Windows
+        - [ ] Linux
+    - [ ] add: github Releases
+
+- [ ] Wrap Up
+    - [ ] Update README.md
+    - [ ] Detect Unused Code
+    - [ ] Look at TODO's
+    - [ ] Update Version Number
+
+
+
+
 # Ideas
 
 - ALL
