@@ -56,7 +56,7 @@ namespace Log {
     if (o.lm != NONE)
       o.fd << log_methods[o.lm];
     if (o.e == true)
-      o.fd << "[\033[" STR(M_RED) "mERROR:\033[0m ";
+      o.fd << "\033[" STR(M_RED) "mERROR:\033[0m ";
 
     ((o.fd << args), ...);
 

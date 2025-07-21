@@ -69,12 +69,12 @@
         - [x] remove other two
         - [x] move to `log.hpp`
     - [x] add print if printable charactor when inspecting buffer.
-    - [ ] Update rules
-        - [ ] holding more rules
-            - [ ] length of tape
-            - [ ] what happens at end of tape
-        - [ ] Pass to VM as constructor
-    - [ ] Create VM destructor
+    - [x] Update rules
+        - [x] holding more rules
+            - [x] length of tape
+            - [x] what happens at end of tape
+        - [x] Pass to VM as constructor
+    - [x] Create VM destructor
     - [ ] Easier way to add front/backend
     - [ ] Investigate mannor to load module for frontend/backend
 

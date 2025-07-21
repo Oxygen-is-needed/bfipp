@@ -54,23 +54,23 @@ namespace Unwind {
     void handle_sigint(int sig) {
       switch (sig) {
         case SIGINT:
-                        if_used(sig, "SIGINT");
-                        Log::print(
-                            error,
-                            "Received SIGINT (Ctrl+C). Unwinding then Exiting.");
-			break;
-        case SIGTERM: 
-                        if_used(sig, "SIGTERM");
-                        Log::print(error,
-                                   "Received SIGTERM. Unwinding then Exiting.");
-			break;
-                      
-        case SIGSEGV: 
-                        if_used(sig, "SIGSEGV");
-                        Log::print(error,
-                                   "Received SIGSEGV. Unwinding then Exiting.");
-			break;
-                      
+          if_used(sig, "SIGINT");
+          Log::print(
+              error,
+              "Received SIGINT (Ctrl+C). Unwinding then Exiting.");
+          break;
+        case SIGTERM:
+          if_used(sig, "SIGTERM");
+          Log::print(error,
+              "Received SIGTERM. Unwinding then Exiting.");
+          break;
+
+        case SIGSEGV:
+          if_used(sig, "SIGSEGV");
+          Log::print(error,
+              "Received SIGSEGV. Unwinding then Exiting.");
+          break;
+
         default:
           if_used(sig, "UNKNOWN");
           Log::print(error, "Received Unknown Signal. Unwinding then Exiting.");

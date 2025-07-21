@@ -9,10 +9,13 @@ public:
     std::vector<unsigned char> findex;
 	};
 
+
   struct Rules {
-    unsigned int tape_length = 30000;
+    unsigned int tape_length = 30000; ///< Length of tape
+    bool eot_wrap = true; ///< Does tape rap at end of tape
     std::vector<Rule> r;
   };
+
 	enum Funcs {
 		INC,    ///< INCrement data at program pointer
 		DEC,    ///< DECrement data at program pointer
@@ -29,7 +32,7 @@ public:
 		_FUNCS_LEN
 	};
 
-	std::vector<Rule> rules;
+  Rules rules;
 	std::vector<unsigned char> instructions;
 	unsigned int ins_max;
 	unsigned int ins_i=0;
@@ -39,7 +42,7 @@ public:
 private:
 	// TODO: make buffer dynamic at VM initalization.
 #define BUF_LEN 30000
-	unsigned char buffer[BUF_LEN] = {0};
+  unsigned char* buffer;
   std::stack<int> jump_list;
 
 	/* Functions {{{ */
@@ -48,12 +51,31 @@ private:
 	void f_inc() { buffer[pc]++; }
 	void f_dec() { buffer[pc]--; }
 
-	void f_right() { pc++; pc%=BUF_LEN; }
-	void f_left() { pc--; pc%=BUF_LEN; }
+  void f_right() {
+    if (pc >= rules.tape_length) {
+      if (rules.eot_wrap == true) {
+        pc = 0;
+        return;
+      }
+      pc = rules.tape_length;
+      return;
+    }
+    pc++;
+  }
+  void f_left() {
+    if (pc <= 0) {
+      if (rules.eot_wrap == true) {
+        pc = rules.tape_length;
+        return;
+      }
+      pc = 0;
+      return;
+    }
 
-	void f_print() {
-		output += buffer[pc];
-	}
+    pc--;
+  }
+
+  void f_print() { output += buffer[pc]; }
 	void f_input() { buffer[pc] = getchar(); }
 
 	void f_push() {
@@ -70,14 +92,14 @@ private:
 		if (buffer[pc] != 0) return;
 		int f=0;
 		for (unsigned int x=ins_i+1; x<ins_max; x++) {
-			if (rules[instructions[x]].cmd == ']') {
+			if (rules.r[instructions[x]].cmd == ']') {
 				if (f==0) {
 					ins_i=x;
 					return;
 				}
 				f--;
 			}
-			if (rules[instructions[x]].cmd == '[')
+			if (rules.r[instructions[x]].cmd == '[')
 				f++;
 		}
 	}
@@ -87,14 +109,14 @@ private:
 		if (buffer[pc] == 0) return;
 		int f=0;
 		for (ssize_t x=ins_i-1; x>=0; x--) {
-			if (rules[instructions[x]].cmd == '[') {
+			if (rules.r[instructions[x]].cmd == '[') {
 				if (f==0) {
 					ins_i=x;
 					return;
 				}
 				f--;
 			}
-			if (rules[instructions[x]].cmd == ']')
+			if (rules.r[instructions[x]].cmd == ']')
 				f++;
 		}
 	}
@@ -140,19 +162,23 @@ private:
 		}
 	}
 public:
+  VM(Rules r, std::vector<unsigned char> i)
+      : buffer(new unsigned char[r.tape_length] {0}) {
+    rules.tape_length = r.tape_length;
+    rules.tape_length = r.tape_length;
+		rules.r.assign(r.r.begin(), r.r.end());
 
-	VM(std::vector<Rule> r, std::vector<unsigned char> i) {
-		rules.assign(r.begin(), r.end());
 		instructions.assign(i.begin(), i.end());
 		ins_max = instructions.size();
-	}
+  }
+  ~VM() {}
 
 	bool step() {
 		total_steps++;
 		if (ins_i >= ins_max)
 			return false;
 
-		run_funcs(rules[instructions[ins_i]]);
+		run_funcs(rules.r[instructions[ins_i]]);
     ins_i++;
 		return true;
 	}
@@ -171,7 +197,7 @@ public:
 		unsigned int out=5;
 		std::cout << total_steps << ": ";
 		unsigned int y=0;
-		for (int x=0; x<width && y<mwidth; x++,y++) {
+		for (int x=0; x<width && y<mwidth && y<rules.tape_length; x++,y++) {
 			if (buffer[y] != 0) {
 				x=0;
 			}
@@ -227,32 +253,34 @@ public:
 
 	/* SET {{{ */
 private:
-	std::vector<VM::Rule> rules;
+  VM::Rules rules;
 public:
 	Backend () {
 		STATE(SET);
 
-		rules.push_back({'+', {VM::INC}			});
-		rules.push_back({'-', {VM::DEC}			});
-		rules.push_back({'>', {VM::RIGHT}		});
-		rules.push_back({'<', {VM::LEFT}		});
-		rules.push_back({'[', {VM::SEEK}	  });
-		rules.push_back({']', {VM::SEEKB}	  });
-		rules.push_back({'.', {VM::PRINT}		});
-		rules.push_back({',', {VM::INPUT}		});
+    rules.tape_length = 30000;
+    rules.eot_wrap = true;
+    rules.r.push_back({'+', {VM::INC}});
+    rules.r.push_back({'-', {VM::DEC}});
+    rules.r.push_back({'>', {VM::RIGHT}});
+    rules.r.push_back({'<', {VM::LEFT}});
+    rules.r.push_back({'[', {VM::SEEK}});
+    rules.r.push_back({']', {VM::SEEKB}});
+    rules.r.push_back({'.', {VM::PRINT}});
+    rules.r.push_back({',', {VM::INPUT}});
 
-		state = GET;
+    state = GET;
 	}
 
   // TODO: add to arguments
 	void print_rules() {
 		if (state <= SET) return;
-    if (rules.size() <= 0) {
+    if (rules.r.size() <= 0) {
       Log::print(error,"Invalid rule set");
     }
 
 		std::cout << "(CMD, Actions)" << std::endl;
-		for (auto r : rules) {
+		for (auto r : rules.r) {
 			std::cout << " " << r.cmd << " = {";
 			int len = r.findex.size()-1;
 			if (len >= 1) {
@@ -281,7 +309,7 @@ private:
 	std::string sanitize_input(std::string s) {
 		std::string out;
 		for (auto c : s) {
-			for (auto r : rules) {
+			for (auto r : rules.r) {
         if (is_end(c) == true) {
           state = CON;
           return out;
@@ -349,8 +377,8 @@ private:
 	std::vector<unsigned char> instructions;
 	void convert_string2ir(std::string s) {
 		for (char c : s) {
-			for (unsigned int x=0; x<(rules.size()); x++) {
-				if (rules[x].cmd == c) {
+			for (unsigned int x=0; x<(rules.r.size()); x++) {
+				if (rules.r[x].cmd == c) {
 					instructions.push_back(x);
 					break;
 				}
@@ -391,7 +419,7 @@ private:
 		return vm_list[0].step();
 	}
 	bool ir_vm_setup() {
-    if (rules.empty() || instructions.empty()) {
+    if (rules.r.empty() || instructions.empty()) {
       Log::print(error, "Invalid Rules and/or Instructions setup.");
       exit(1);
     }
@@ -401,7 +429,7 @@ private:
       exit(1);
     }
 
-                VM vm(rules, instructions);
+    VM vm(rules, instructions);
 		vm_list.push_back(vm);
 		vm_using = true;
 
