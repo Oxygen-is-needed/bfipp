@@ -45,8 +45,8 @@
 
 # v1.1.0
 
-- [ ] Fix
-    - [ ] Fix critics
+- [x] Fix
+    - [x] Fix critics
         - [x] Use `.hpp` instead of `.cpp`
         - [x] Remove implicit void arguments
         - [x] Use `static_cast` preferably instead of `c` type casting
@@ -54,19 +54,20 @@
         - [x] Ues `cerr << '\n'` when single new line is needed.
             - Investigate better methods
         - [x] Use `nullptr` instead of `NULL`
-        - [ ] Prefer not to use anonymous namespaces
+        - [x] Prefer not to use anonymous namespaces
+            - https://stackoverflow.com/questions/4977252/why-an-unnamed-namespace-is-a-superior-alternative-to-static
         - [x] Remove need of `using namespace std;`
     - [x] Remove debug macros
-    - [ ] Signal Catching
+    - [x] Signal Catching
 
 - [ ] General
-    - [ ] Add/Fix Logging
+    - [x] Add/Fix Logging
         - [x] with verbose logging levels as well
         - [x] loging method prefix
         - [x] error appending after prefix
-        - [ ] replace all logs
-        - [ ] remove other two
-        - [ ] move to `log.hpp`
+        - [x] replace all logs
+        - [x] remove other two
+        - [x] move to `log.hpp`
     - [x] add print if printable charactor when inspecting buffer.
     - [ ] Update rules
         - [ ] holding more rules

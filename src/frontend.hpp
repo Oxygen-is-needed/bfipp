@@ -1,10 +1,6 @@
 #ifndef FRONTEND__HPP
 #define FRONTEND__HPP
 
-#include "utils.hpp"
-#include "log.hpp"
-
-
 // Frontend Utilities {{{
 namespace Frontend_Utils {
   void print_output(std::string output) {
@@ -211,6 +207,10 @@ namespace Frontend {
 #undef  CONF
 #undef  CONFIG
 
+  const Log::O error = {
+    .e = true,
+    .lm = Log::FRONTEND,
+  };
 
 	void frontend(Backend backend, enum Frontend_Index fi) {
 		if (backend.state != Backend::EXE) {

@@ -7,6 +7,10 @@
 #include <string>
 #include <vector>
 
+#include "utils.hpp"
+#include "log.hpp"
+#include "escape.hpp"
+
 #include "backend.hpp"
 #include "frontend.hpp"
 
