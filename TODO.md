@@ -122,7 +122,6 @@
     - Step Back one step
     - Optimize
     - Convert necessary variables to unsigned long
-    - Add output buffer
     - Add input buffer
     - Support for multicharactor tokens
     - Support for Huffman Coding binary files.

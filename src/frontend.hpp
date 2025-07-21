@@ -28,11 +28,11 @@ namespace Simple_Text_Frontend {
   // TODO: move to config file
   // NOTE: edit to configure the keybindings
 #define KEYS  \
-    X(QUIT,   'q',  "Quit Frontend.") \
-    X(HELP,   'h',  "Prints help text.") \
-    X(RUN,    'r',  "Run entire program without user input.") \
-    X(SKIP,   's',  "num: Skip a defined amount each step.") \
-    X(WAIT,   'w',  "num: Wait till defined instruction counter.")
+  X(QUIT,   'q',  "Quit Frontend.") \
+  X(HELP,   'h',  "Prints help text.") \
+  X(RUN,    'r',  "Run entire program without user input.") \
+  X(SKIP,   's',  "num: Skip a defined amount each step.") \
+  X(WAIT,   'w',  "num: Wait till defined instruction counter.")
 
   enum Keybinds {
 #define X(A,B,C) A = B,
@@ -46,7 +46,7 @@ namespace Simple_Text_Frontend {
 #define X(A,B,C)  std::cout << "\t|" << B << "| - " << C << std::endl;
       KEYS
 #undef X
-      help--;
+        help--;
     }
   }
 
@@ -57,7 +57,7 @@ namespace Simple_Text_Frontend {
       (std::stoul(input));
   }
   void keybindings(char &key, bool &ret, bool &ug, int &help,
-                   unsigned int &skip, unsigned int &wait) {
+      unsigned int &skip, unsigned int &wait) {
     switch(key) {
       case QUIT:
         ret = false; return;
@@ -174,36 +174,36 @@ namespace Simple_Text_Frontend {
 
 // Frontend {{{
 namespace Frontend {
-    // TODO: move to config file
-    // NOTE: Configure to add a frontend.
+  // TODO: move to config file
+  // NOTE: Configure to add a frontend.
 #define CONFIG  \
-    X(NONE,         None::frontend)  \
-    X(TERM_SIMPLE,  Simple_Text_Frontend::frontend)
+  X(NONE,         None::frontend)  \
+  X(TERM_SIMPLE,  Simple_Text_Frontend::frontend)
 
-    /**
-     * define CONF - adds _LEN enum, to show amount in enum.
-     */
+  /**
+   * define CONF - adds _LEN enum, to show amount in enum.
+   */
 #define CONF  \
-    CONFIG  \
-    X(_LEN, nullptr)
+  CONFIG  \
+  X(_LEN, nullptr)
 
 
-    enum Frontend_Index {
+  enum Frontend_Index {
 #define X(A,B)  A,
-      CONF
+    CONF
 #undef  X
-    };
+  };
 
-    void (*frontend_funcs[])(Backend) = {
+  void (*frontend_funcs[])(Backend) = {
 #define X(A,B)  B,
-      CONFIG
+    CONFIG
 #undef  X
-    };
-		void execution_loop(Backend backend, enum Frontend_Index fi) {
-			backend.execute_set();
+  };
+  void execution_loop(Backend backend, enum Frontend_Index fi) {
+    backend.execute_set();
 
-      frontend_funcs[fi](backend);
-		}
+    frontend_funcs[fi](backend);
+  }
 #undef  CONF
 #undef  CONFIG
 
@@ -212,16 +212,16 @@ namespace Frontend {
     .lm = Log::FRONTEND,
   };
 
-	void frontend(Backend backend, enum Frontend_Index fi) {
-		if (backend.state != Backend::EXE) {
-			Log::print(error,
+  void frontend(Backend backend, enum Frontend_Index fi) {
+    if (backend.state != Backend::EXE) {
+      Log::print(error,
           "Program: Frontend self-incrementing of backend status not supported.\n"
           "Will need to increment status to Execution.");
       exit(1);
-		}
+    }
 
-		execution_loop(backend, fi);
-	}
+    execution_loop(backend, fi);
+  }
 };
 // }}}
 

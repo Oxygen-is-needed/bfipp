@@ -41,27 +41,27 @@ namespace Log {
   struct O error(Log_Methods lm = NONE, std::ostream& fd = std::cout) {
     return {
       .e = true,
-      .lm = lm,
-      .fd = fd
+        .lm = lm,
+        .fd = fd
     };
   }
   // }}}
 
 
   template <typename... Args>
-  void print(struct O o, Args const &...args) {
-    if (o.v > verbose_level)
-      return;
+    void print(struct O o, Args const &...args) {
+      if (o.v > verbose_level)
+        return;
 
-    if (o.lm != NONE)
-      o.fd << log_methods[o.lm];
-    if (o.e == true)
-      o.fd << "\033[" STR(M_RED) "mERROR:\033[0m ";
+      if (o.lm != NONE)
+        o.fd << log_methods[o.lm];
+      if (o.e == true)
+        o.fd << "\033[" STR(M_RED) "mERROR:\033[0m ";
 
-    ((o.fd << args), ...);
+      ((o.fd << args), ...);
 
-    o.fd << std::endl;
-  }
+      o.fd << std::endl;
+    }
 
 }
 // }}}

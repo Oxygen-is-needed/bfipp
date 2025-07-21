@@ -47,11 +47,11 @@ namespace Args {
 
 #undef KEYS
   }
-  
+
   void print_version() {
     std::cout << "bfi++ " << VERSION << " (" << __DATE__ << ", "
-              << __TIME__ << ") [" << STR(CC) << " " << __VERSION__
-              << "]" << std::endl;
+      << __TIME__ << ") [" << STR(CC) << " " << __VERSION__
+      << "]" << std::endl;
   }
 
   enum Get_Status {
@@ -88,7 +88,7 @@ namespace Args {
           exit(0);
           break;
 
-        // INPUT
+          // INPUT
         case 'f':
           gstat = FILE;
           text = optarg;
@@ -110,13 +110,13 @@ namespace Args {
           Log::print(verbose, "Set argument as input");
           break;
 
-        // FRONTEND
+          // FRONTEND
         case 'r':
           frontend = Frontend::NONE;
           Log::print(verbose, "Enabled run mode");
           break;
 
-        // OTHER
+          // OTHER
         case 'V':
           // TODO: add optional argument to set level of verbose
           Log::verbose_level = Log::verbose_max;
@@ -132,10 +132,10 @@ int main(int argc, char* argv[]) {
   Unwind::initalize_unwind();
   Args::arguments(argc, argv);
 
-	// Set Settings
-	Backend bf;
+  // Set Settings
+  Backend bf;
 
-	// Get input /* Ignoring non program charactors */
+  // Get input /* Ignoring non program charactors */
   switch(Args::gstat) {
     case Args::NONE:
       Log::print(Log::error(),"No code input specified.");
@@ -164,10 +164,10 @@ int main(int argc, char* argv[]) {
 
   // Convert to IR
   Log::print({.v=1,.lm=Log::BACKEND},"Converting to IR representation");
-	bf.convert(Backend::C_IR);
+  bf.convert(Backend::C_IR);
 
-	// Execute (Option for stepping through)
+  // Execute (Option for stepping through)
   Log::print({.v=1,.lm=Log::FRONTEND}, "Running frontend");
-	Frontend::frontend(bf, Args::frontend);
+  Frontend::frontend(bf, Args::frontend);
 }
 // vim: tabstop=2 shiftwidth=2 softtabstop=2 expandtab
