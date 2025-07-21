@@ -1,10 +1,14 @@
-#include <vector>
-#include <string>
-#include <iostream>
+#include <filesystem>
+#include <fstream>
 #include <getopt.h>
+#include <iostream>
+#include <limits>
+#include <stack>
+#include <string>
+#include <vector>
 
-#include "backend.cpp"
-#include "frontend.cpp"
+#include "backend.hpp"
+#include "frontend.hpp"
 
 // Args {{{
 namespace Args {
@@ -12,12 +16,12 @@ namespace Args {
     // TODO: move to config file
     // NOTE: edit to configure the arguments and help page text.
 #define KEYS  \
-    X('f', ':', ' ', "file",    required_argument,  NULL, "file: Input file.")    \
-    X('h', ' ', ' ', "help",    no_argument,        NULL, "Prints helps text.")   \
-    X('i', ':', ':', "input",   required_argument,  NULL, "[txt]: Input text.\n\t\tDefault with no arguments.\n\t\t'-' for reading from stdin.")   \
-    X('r', ' ', ' ', "run",     no_argument,        NULL, "Run input imediatly.") \
-    X('V', ' ', ' ', "verbose", no_argument,        NULL, "Enable verbose output.") \
-    X('v', ' ', ' ', "version", no_argument,        NULL, "Print version")
+    X('f', ':', ' ', "file",    required_argument,  nullptr,  "file: Input file.")    \
+    X('h', ' ', ' ', "help",    no_argument,        nullptr,  "Prints helps text.")   \
+    X('i', ':', ':', "input",   required_argument,  nullptr,  "[txt]: Input text.\n\t\tDefault with no arguments.\n\t\t'-' for reading from stdin.")   \
+    X('r', ' ', ' ', "run",     no_argument,        nullptr,  "Run input imediatly.") \
+    X('V', ' ', ' ', "verbose", no_argument,        nullptr,  "Enable verbose output.") \
+    X('v', ' ', ' ', "version", no_argument,        nullptr,  "Print version")
 
     struct option longopts[] = {
 #define X(A,F,G,B,C,D,E)  { B, C, D, A },
@@ -30,9 +34,9 @@ namespace Args {
 #undef  X
     };
 
-    void exec_help(void) {
+    void exec_help() {
 #define X(A,F,G,B,C,D,E)  std::cout << "\t" << "-" << A \
-      << " | " << "--" << B << "\t - " << E << endl;
+      << " | " << "--" << B << "\t - " << E << std::endl;
       KEYS
 #undef  X
     }
@@ -40,10 +44,10 @@ namespace Args {
 #undef KEYS
   }
   
-  void print_version(void) {
+  void print_version() {
     std::cout << "bfi++ " << VERSION << " (" << __DATE__ << ", "
               << __TIME__ << ") [" << STR(CC) << " " << __VERSION__
-              << "]" << endl;
+              << "]" << std::endl;
   }
 
   enum Get_Status {
@@ -51,9 +55,9 @@ namespace Args {
   };
   enum Get_Status gstat=NONE;
   enum Frontend::Frontend_Index frontend = Frontend::TERM_SIMPLE;
-  string text = "";
+  std::string text = "";
 
-  bool use_text(void) {
+  bool use_text() {
     if (text.empty() == true) {
       Error::print("No code input specified.");
       return false;
@@ -61,9 +65,15 @@ namespace Args {
     return true;
   }
 
+  Log::O verbose = {
+    .v = 1,
+    .lm = Log::SETTINGS,
+  };
+
+  // TODO: check optarg does not equal nullptr
   void arguments(int argc, char* argv[]) {
     int opt = 0;
-    while ((opt = getopt_long(argc, argv, opts, longopts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, opts, longopts, nullptr)) != -1) {
       switch (opt) {
         // RUN AND KILL
         case 'h':
@@ -78,41 +88,41 @@ namespace Args {
         case 'f':
           gstat = FILE;
           text = optarg;
-          Verbose::print("Enable input from file");
+          Log::print(verbose, "Enabled input from file");
           break;
         case 'i':
-          if (optarg == NULL) {
+          if (optarg == nullptr) {
             gstat = HELLO;
-            Verbose::print("Set input to Hello World default");
+            Log::print(verbose, "Set input to Hello World default");
             break;
           }
           gstat = TEXT;
           text = optarg;
           if (text == "-") {
-            Verbose::print("Reading from stdin for input");
+            Log::print(verbose, "Reading from stdin for input");
             std::cin >> text;
             break;
           }
-          Verbose::print("Set argument as input");
+          Log::print(verbose, "Set argument as input");
           break;
 
         // FRONTEND
         case 'r':
           frontend = Frontend::NONE;
-          Verbose::print("Enabled run mode");
+          Log::print(verbose, "Enabled run mode");
           break;
 
         // OTHER
         case 'V':
-          Verbose::verbose = true;
-          Verbose::print("Enabled Verbose");
+          // TODO: add optional argument to set level of verbose
+          Log::verbose_level = Log::verbose_max;
+          Log::print(verbose, "Enabled Verbose");
           break;
       }
     }
   }
 }
 // }}}
-
 
 int main(int argc, char* argv[]) {
   Unwind::initalize_unwind();
@@ -124,23 +134,23 @@ int main(int argc, char* argv[]) {
 	// Get input /* Ignoring non program charactors */
   switch(Args::gstat) {
     case Args::NONE:
-      Error::print("No code input specified.");
+      Log::print(Log::error(),"No code input specified.");
       Args::exec_help();
       return 0;
 
     case Args::FILE:
       if (Args::use_text() == false) return 0;
       if (!std::filesystem::exists(Args::text)) {
-        Error::print("File does not exist.");
+        Log::print(Log::error(), "File does not exist.");
         return 0;
       }
-      Verbose::print("Getting data from file");
+      Log::print(Args::verbose, "Getting data from file");
       bf.get_file(Args::text);
       break;
     case Args::TEXT:
       if (Args::use_text() == false) return 0;
 
-      Verbose::print("Getting data from input");
+      Log::print(Args::verbose, "Getting data from input");
       bf.get(Args::text);
       break;
     case Args::HELLO:
@@ -149,11 +159,11 @@ int main(int argc, char* argv[]) {
   }
 
   // Convert to IR
-  Verbose::print("Converting to IR representation");
+  Log::print({.v=1,.lm=Log::BACKEND},"Converting to IR representation");
 	bf.convert(Backend::C_IR);
 
 	// Execute (Option for stepping through)
-  Verbose::print("Running frontend");
+  Log::print({.v=1,.lm=Log::FRONTEND}, "Running frontend");
 	Frontend::frontend(bf, Args::frontend);
 }
 // vim: tabstop=2 shiftwidth=2 softtabstop=2 expandtab

@@ -47,20 +47,27 @@
 
 - [ ] Fix
     - [ ] Fix critics
-        - [ ] Use `.hpp` instead of `.cpp`
-        - [ ] Remove implicit NULL arguments
-        - [ ] Use `static_cast` preferably instead of `c` type casting
-        - [ ] Prefer not to use char*
-        - [ ] Ues `cerr << '\n'` when single new line is needed.
+        - [x] Use `.hpp` instead of `.cpp`
+        - [x] Remove implicit void arguments
+        - [x] Use `static_cast` preferably instead of `c` type casting
+        - [x] Prefer not to use char*
+        - [x] Ues `cerr << '\n'` when single new line is needed.
             - Investigate better methods
-        - [ ] Use `nullptr` instead of `NULL`
+        - [x] Use `nullptr` instead of `NULL`
         - [ ] Prefer not to use anonymous namespaces
+        - [x] Remove need of `using namespace std;`
+    - [x] Remove debug macros
     - [ ] Signal Catching
 
 - [ ] General
-    - [ ] Clean up code
     - [ ] Add/Fix Logging
-        - [ ] with verbose logging levels as well
+        - [x] with verbose logging levels as well
+        - [x] loging method prefix
+        - [x] error appending after prefix
+        - [ ] replace all logs
+        - [ ] remove other two
+        - [ ] move to `log.hpp`
+    - [x] add print if printable charactor when inspecting buffer.
     - [ ] Update rules
         - [ ] holding more rules
             - [ ] length of tape
@@ -79,6 +86,8 @@
         - [ ] document how to add backend
     - [ ] `-H` | `--help-long` for longer help text.
 
+- [ ] Move configuration macros to `config.hpp`
+
 - [ ] Package and Release
     - [ ] use cmake to create relaese in multiple formats
         - [ ] Windows
@@ -86,6 +95,7 @@
     - [ ] add: github Releases
 
 - [ ] Wrap Up
+    - [ ] Clean up code
     - [ ] Update README.md
     - [ ] Detect Unused Code
     - [ ] Look at TODO's

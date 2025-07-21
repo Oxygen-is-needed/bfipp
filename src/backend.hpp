@@ -1,9 +1,8 @@
-#include <stack>
-#include <filesystem>
-#include <fstream>
-#include <limits>
-#include "utils.cpp"
-#include "error.cpp"
+#ifndef BACKEND__HPP
+#define BACKEND__HPP
+
+#include "utils.hpp"
+#include "error.hpp"
 
 
 /* VM {{{ */
@@ -11,8 +10,13 @@ class VM {
 public:
 	struct Rule {
 		char cmd;
-		vector<unsigned char> findex;
+    std::vector<unsigned char> findex;
 	};
+
+  struct Rules {
+    unsigned int tape_length = 30000;
+    std::vector<Rule> r;
+  };
 	enum Funcs {
 		INC,    ///< INCrement data at program pointer
 		DEC,    ///< DECrement data at program pointer
@@ -34,41 +38,39 @@ public:
 	unsigned int ins_max;
 	unsigned int ins_i=0;
 	unsigned int total_steps=0;
-	string output;
+  std::string output;
 	unsigned int pc=0;
 private:
 	// TODO: make buffer dynamic at VM initalization.
 #define BUF_LEN 30000
 	unsigned char buffer[BUF_LEN] = {0};
-	stack<int> jump_list;
+  std::stack<int> jump_list;
 
 	/* Functions {{{ */
-	void fnull(void) {}
+	void fnull() {}
 
-	void f_inc(void) { buffer[pc]++; }
-	void f_dec(void) { buffer[pc]--; }
+	void f_inc() { buffer[pc]++; }
+	void f_dec() { buffer[pc]--; }
 
-	void f_right(void) { pc++; pc%=BUF_LEN; }
-	void f_left(void) { pc--; pc%=BUF_LEN; }
+	void f_right() { pc++; pc%=BUF_LEN; }
+	void f_left() { pc--; pc%=BUF_LEN; }
 
-	void f_print(void) {
-#ifdef DEBUG
-		std::cout << "'" << buffer[pc] << "'";
-#endif
+	void f_print() {
 		output += buffer[pc];
 	}
-	void f_input(void) { buffer[pc] = getchar(); }
+	void f_input() { buffer[pc] = getchar(); }
 
-	void f_push(void) {
-		if (!jump_list.empty()) {
-			if ((unsigned int)jump_list.top() == ins_i) return;
+	void f_push() {
+    if (!jump_list.empty()) {
+      if (static_cast<unsigned int>(jump_list.top()) == ins_i)
+        return;
     }
 		jump_list.push(ins_i);
 	}
-	void f_pop(void) { if (!jump_list.empty()) jump_list.pop(); }
+	void f_pop() { if (!jump_list.empty()) jump_list.pop(); }
 
   // TODO: remove need of this function.
-	void f_seek(void) {
+	void f_seek() {
 		if (buffer[pc] != 0) return;
 		int f=0;
 		for (unsigned int x=ins_i+1; x<ins_max; x++) {
@@ -85,7 +87,7 @@ private:
 	}
 
   // TODO: remove need of this function.
-	void f_seekb(void) {
+	void f_seekb() {
 		if (buffer[pc] == 0) return;
 		int f=0;
 		for (ssize_t x=ins_i-1; x>=0; x--) {
@@ -101,20 +103,20 @@ private:
 		}
 	}
 
-	void f_jz(void) {
+	void f_jz() {
 		if (jump_list.empty()) return;
 		int a = jump_list.top();
 		if (a > 0) a--;
 		if (buffer[pc] == 0) ins_i = a;
 	}
-	void f_jnz(void) {
+	void f_jnz() {
 		if (jump_list.empty()) return;
 		int a = jump_list.top();
 		if (a > 0) a--;
 		if (buffer[pc] != 0) ins_i = a;
 	}
 
-	using FPtrs = void (VM::*)(void);
+	using FPtrs = void (VM::*)();
 	FPtrs funcs[_FUNCS_LEN] = {
 		[INC]	  = &VM::f_inc,
 		[DEC]	  = &VM::f_dec,
@@ -149,7 +151,7 @@ public:
 		ins_max = instructions.size();
 	}
 
-	bool step(void) {
+	bool step() {
 		total_steps++;
 		if (ins_i >= ins_max)
 			return false;
@@ -158,11 +160,12 @@ public:
     ins_i++;
 		return true;
 	}
-	void run(void) {
+	void run() {
 		while(step() == true);
 	}
 
 
+  // TODO: should move to frontend?
 	unsigned int inspect_buffer(ssize_t mwidth=100, int view_frame=14) {
 		if (mwidth == -1) {
       mwidth = std::numeric_limits<int>::max();
@@ -176,15 +179,26 @@ public:
 			if (buffer[y] != 0) {
 				x=0;
 			}
+
+      std::string code = "";
+      if (buffer[y] != 0) {
+          if (isprint(buffer[y]) == 0 || buffer[y] == ' ') {
+            code = std::to_string(buffer[y]);
+          } else  {
+            code += buffer[y];
+          }
+      }
+
 			if (pc == y) {
 				std::cout << C::B << "{" << C::Y
-					<< (unsigned int) buffer[y]
+					<< code
 					<< C::B << "} " << C::RESET;
 				continue;
 			}
-			std::cout << "[" << (unsigned int) buffer[y] << "] ";
+
+			std::cout << "[" << code << "] ";
 		}
-		std::cout << endl;
+		std::cout << std::endl;
     out += 4*y;
     return out;
 	}
@@ -193,6 +207,7 @@ public:
 
 /* Backend {{{ */
 class Backend {
+  // TODO: remove need for macro
 #define STATE(s)	if (state != s) { Error::die("Use of function '", __FUNCTION__, "' in invalid state."); }
 public:
 	enum State {
@@ -206,7 +221,7 @@ public:
 private:
 	std::vector<VM::Rule> rules;
 public:
-	Backend (void) {
+	Backend () {
 		STATE(SET);
 
 		rules.push_back({'+', {VM::INC}			});
@@ -222,21 +237,21 @@ public:
 	}
 
   // TODO: add to arguments
-	void print_rules(void) {
+	void print_rules() {
 		if (state <= SET) return;
     if (rules.size() <= 0)
       Error::die("Invalid rule set");
 
-		std::cout << "(CMD, Actions)" << endl;
+		std::cout << "(CMD, Actions)" << std::endl;
 		for (auto r : rules) {
 			std::cout << " " << r.cmd << " = {";
 			int len = r.findex.size()-1;
 			if (len >= 1) {
 				for (; len>0; len--) {
-					std::cout << (unsigned int)r.findex[len] << ",";
+					std::cout << r.findex[len] << ",";
 				}
 			}
-			std::cout << (unsigned int)r.findex[len] << "}" << endl;
+			std::cout << r.findex[len] << "}" << std::endl;
 		}
 	}
 	/* }}} */
@@ -278,7 +293,7 @@ public:
 
 		state = CON;
 	}
-	void get(void) {
+	void get() {
 		// "Hello, world!\n" in bf
 		get(">+++++++++[<++++++++>-]<.>+++++++[<++++>-]<+.+++++++..+++.[-]>++"
 			"++++++[<++++>-]<.>+++++++++++[<++++++++>-]<-.--------.+++.------"
@@ -292,7 +307,7 @@ public:
 			Error::print("File '", filename, "' does not exist");
 			return;
 		}
-		ifstream fd(filename);
+    std::ifstream fd(filename);
 		if (!fd.is_open()) {
 			Error::die("File Descriptor for '", filename, "' was not openend");
 		}
@@ -353,12 +368,12 @@ private:
 	bool vm_using = false;
 	std::vector<VM> vm_list;
 
-	bool ir_vm_step(void) {
+	bool ir_vm_step() {
 		if (vm_using != true || vm_list.empty()) { Error::die("VM has not been initalized!"); }
 
 		return vm_list[0].step();
 	}
-	bool ir_vm_setup(void) {
+	bool ir_vm_setup() {
 		if (rules.empty() || instructions.empty()) { Error::die("Invalid Rules and/or Instructions setup."); } 
 
 		if (!vm_list.empty()) Error::die("TODO: cannot have multiple VM's at once.");
@@ -369,15 +384,15 @@ private:
 
 		return true;
 	}
-	void ir_vm(void) {
+	void ir_vm() {
 		ir_vm_setup();
 		if (vm_using != true || vm_list.empty()) { Error::die("VM has not been initalized!"); }
 	}
 
 	struct {
-		bool (Backend::*step)(void);
-		bool (Backend::*init)(void);
-		void (Backend::*use)(void);
+		bool (Backend::*step)();
+		bool (Backend::*init)();
+		void (Backend::*use)();
 	} Exec_Funcs[1] = {
 		[C_IR] = { &Backend::ir_vm_step, &Backend::ir_vm_setup, &Backend:: ir_vm}
 	};
@@ -396,7 +411,7 @@ public:
 		execute_set();
 		(this->*Exec_Funcs[0].use)();
 	}
-	VM& get_vm(void) {
+	VM& get_vm() {
 		if (vm_list.empty()) Error::die("Cannot get a VM that is not initalized.");
 		VM& vm = vm_list[0];
 		return vm;
@@ -405,4 +420,5 @@ public:
 };
 /* }}} */
 
+#endif
 // vim: tabstop=2 shiftwidth=2 softtabstop=2 expandtab

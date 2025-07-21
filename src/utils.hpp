@@ -8,16 +8,26 @@
 
 // Colors {{{
 namespace C {
+#define M_RESET		  0
+#define M_BLACK		  30
+#define M_RED     	31
+#define M_GREEN   	32
+#define M_YELLOW  	33
+#define M_BLUE    	34
+#define M_MAGENTA 	35
+#define M_CYAN    	36
+#define M_WHITE   	37
+
 	enum Colors {
-	RESET		= 0,
-	BLACK		= 30, Z = 30,
-	RED     	= 31, R = 31,
-	GREEN   	= 32, G = 32,
-	YELLOW  	= 33, Y = 33,
-	BLUE    	= 34, B = 34,
-	MAGENTA 	= 35, M = 35,
-	CYAN    	= 36, C = 36,
-	WHITE   	= 37, W = 37,
+	RESET		  = M_RESET,
+	BLACK		  = M_BLACK,    Z = M_BLACK,
+	RED     	= M_RED,      R = M_RED,
+	GREEN   	= M_GREEN,    G = M_GREEN,
+	YELLOW  	= M_YELLOW,   Y = M_YELLOW,
+	BLUE    	= M_BLUE,     B = M_BLUE,
+	MAGENTA 	= M_MAGENTA,  M = M_MAGENTA,
+	CYAN    	= M_CYAN,     C = M_CYAN,
+	WHITE   	= M_WHITE,    W = M_WHITE,
 
 	BOLD    	= 1,
 	DIM     	= 2,
@@ -58,7 +68,7 @@ namespace C {
 	}
 
 	std::ostream& operator<<(std::ostream& os, Colors a) {
-		os << "\033[" << (int)a << "m";
+		os << "\033[" << static_cast<int>(a) << "m";
 		return os;
 	}
 }
@@ -67,26 +77,23 @@ namespace C {
 namespace Unwind {
   namespace {
     struct Unwind {
-      void (*fptr)(void);
+      void (*fptr)();
       std::string name;
     };
     std::vector<Unwind> unwind_vector;
     bool unwind_b=false;
   }
 
-  void pop_unwind(void) {
+  void pop_unwind() {
     unwind_vector.erase(--unwind_vector.end());
   }
   namespace {
-    void run_unwind(void) {
+    void run_unwind() {
       if (unwind_vector.empty() == true || unwind_b == true) {
         return;
       }
       for (int x=unwind_vector.size()-1; x>=0; x--) {
         unwind_vector[x].fptr();
-#ifdef DEBUG
-        std::cerr << C::M << "UNWIND: " << C::RESET << unwind_vector[x].name << endl;
-#endif
         pop_unwind();
       }
     }
@@ -95,21 +102,18 @@ namespace Unwind {
   void add_unwind(struct Unwind u) {
     unwind_vector.push_back(u);
   }
-  void unwind(void) {
+  void unwind() {
     run_unwind();
     exit(0);
   }
 
   namespace {
     void handle_sigint(int) {
-#ifdef DEBUG
-      std::cerr << "Signal Caught: " << sig << endl;
-#endif
       run_unwind();
       exit(0);
     }
   }
-  void signal_handler(void) {
+  void signal_handler() {
 #ifdef _WIN32
     signal(SIGINT,  handle_sigint);
     signal(SIGTERM, handle_sigint);
@@ -120,18 +124,18 @@ namespace Unwind {
     sa.sa_handler   = &handle_sigint;
     sa.sa_flags     = SA_RESTART;
 
-    sigaction(SIGINT,   &sa, NULL);
-    sigaction(SIGTERM,  &sa, NULL);
-    sigaction(SIGABRT,  &sa, NULL);
+    sigaction(SIGINT,   &sa, nullptr);
+    sigaction(SIGTERM,  &sa, nullptr);
+    sigaction(SIGABRT,  &sa, nullptr);
 #endif
   }
 
-  void on_exit(void) {
+  void on_exit() {
     if (unwind_b == true)
       return;
     run_unwind();
   }
-  void initalize_unwind(void) {
+  void initalize_unwind() {
     signal_handler();
     atexit(on_exit);
   }

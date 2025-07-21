@@ -1,14 +1,17 @@
-#include "error.cpp"
-#include "utils.cpp"
+#ifndef FRONTEND__HPP
+#define FRONTEND__HPP
+
+#include "error.hpp"
+#include "utils.hpp"
 
 
 // Frontend Utilities {{{
 namespace Frontend_Utils {
-  void print_output(string output) {
+  void print_output(std::string output) {
     // NOTE: potential for got_vm to not be initalized at execution.
     std::cout << C::M << "\nOUTPUT =====\n" << C::RESET
       << output
-      << C::M << "\n============" << C::RESET << endl;
+      << C::M << "\n============" << C::RESET << std::endl;
     fflush(stdout);
   }
 }
@@ -43,8 +46,8 @@ namespace Simple_Text_Frontend {
 
   void help_text(int& help) {
     if (help > 0) {
-      std::cout << endl;
-#define X(A,B,C)  std::cout << "\t|" << B << "| - " << C << endl;
+      std::cout << std::endl;
+#define X(A,B,C)  std::cout << "\t|" << B << "| - " << C << std::endl;
       KEYS
 #undef X
       help--;
@@ -52,7 +55,7 @@ namespace Simple_Text_Frontend {
   }
 
   unsigned int get_int() {
-    string input;
+    std::string input;
     std::cin >> input;
     return static_cast<unsigned int>
       (std::stoul(input));
@@ -113,14 +116,14 @@ namespace Simple_Text_Frontend {
     for (unsigned int x=start; x<end; x++) {
       std::cout << "`" << x%9+1 << "`";
     }
-    std::cout << endl;
+    std::cout << std::endl;
   }
 
   // TODO: better method
-  string placeholder = "";
-  string& out = placeholder;
+  std::string placeholder = "";
+  std::string& out = placeholder;
 
-  void unwind(void) {
+  void unwind() {
     Frontend_Utils::print_output(out);
     C::show_cursor();
   }
@@ -144,7 +147,7 @@ namespace Simple_Text_Frontend {
           && (wait == 0 || wait < got_vm.ins_i)) {
         skip_i = 0;
         char in = getchar();
-        string input;
+        std::string input;
 
         keybindings(in, ret, user_guided, help, skip, wait);
         if (ret == false)
@@ -158,7 +161,7 @@ namespace Simple_Text_Frontend {
 
         help_text(help);
 
-        std::cout << endl;
+        std::cout << std::endl;
 
       }
       ret = got_vm.step();
@@ -175,15 +178,18 @@ namespace Simple_Text_Frontend {
 
 // Frontend {{{
 namespace Frontend {
-	namespace {
     // TODO: move to config file
     // NOTE: Configure to add a frontend.
 #define CONFIG  \
     X(NONE,         None::frontend)  \
     X(TERM_SIMPLE,  Simple_Text_Frontend::frontend)
+
+    /**
+     * define CONF - adds _LEN enum, to show amount in enum.
+     */
 #define CONF  \
     CONFIG  \
-    X(_LEN, NULL)
+    X(_LEN, nullptr)
 
 
     enum Frontend_Index {
@@ -202,10 +208,9 @@ namespace Frontend {
 
       frontend_funcs[fi](backend);
 		}
-
 #undef  CONF
 #undef  CONFIG
-	}
+
 
 	void frontend(Backend backend, enum Frontend_Index fi) {
 		if (backend.state != Backend::EXE) {
@@ -218,4 +223,5 @@ namespace Frontend {
 };
 // }}}
 
+#endif
 // vim: tabstop=2 shiftwidth=2 softtabstop=2 expandtab

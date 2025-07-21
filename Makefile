@@ -1,6 +1,6 @@
 CC=g++
 CC_WINDOWS=x86_64-w64-mingw32-g++
-MACROS=-DVERSION="\"v1.0.0-Pre\""
+MACROS=-DVERSION="\"v1.1.0-pre\""
 FLAGS=
 OUT=bfi++
 IN=src/main.cpp
@@ -18,7 +18,6 @@ base-release:
 
 
 debug: FLAGS+=-ggdb
-debug: MACROS+=-DDEBUG
 debug: compile
 
 
