@@ -4,7 +4,9 @@
 // Frontend Utilities {{{
 namespace Frontend_Utils {
   void print_output(std::string output) {
-    // NOTE: potential for got_vm to not be initalized at execution.
+    if (output.empty())
+      return;
+
     std::cout << C::M << "\nOUTPUT =====\n" << C::RESET
       << output
       << C::M << "\n============" << C::RESET << std::endl;
@@ -25,14 +27,7 @@ namespace None {
 // }}}
 // Simple_Text_Frontend {{{
 namespace Simple_Text_Frontend {
-  // TODO: move to config file
-  // NOTE: edit to configure the keybindings
-#define KEYS  \
-  X(QUIT,   'q',  "Quit Frontend.") \
-  X(HELP,   'h',  "Prints help text.") \
-  X(RUN,    'r',  "Run entire program without user input.") \
-  X(SKIP,   's',  "num: Skip a defined amount each step.") \
-  X(WAIT,   'w',  "num: Wait till defined instruction counter.")
+#define KEYS  FRONTEND_KEYS__SIMPLE_TEXT
 
   enum Keybinds {
 #define X(A,B,C) A = B,
@@ -115,9 +110,7 @@ namespace Simple_Text_Frontend {
     std::cout << std::endl;
   }
 
-  // TODO: better method
-  std::string placeholder = "";
-  std::string& out = placeholder;
+  std::string out = "";
 
   void unwind() {
     Frontend_Utils::print_output(out);
@@ -174,11 +167,7 @@ namespace Simple_Text_Frontend {
 
 // Frontend {{{
 namespace Frontend {
-  // TODO: move to config file
-  // NOTE: Configure to add a frontend.
-#define CONFIG  \
-  X(NONE,         None::frontend)  \
-  X(TERM_SIMPLE,  Simple_Text_Frontend::frontend)
+#define CONFIG  FRONTEND_CONFIG
 
   /**
    * define CONF - adds _LEN enum, to show amount in enum.

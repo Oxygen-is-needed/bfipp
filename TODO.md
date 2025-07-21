@@ -78,16 +78,16 @@
     - [ ] Easier way to add front/backend
     - [ ] Investigate mannor to load module for frontend/backend
 
+- [x] Move configuration macros to `config.hpp`
+
 - [ ] Use Cmake instead of make
 
 - [ ] Documentation
     - [ ] Improve README
-        - [ ] show default rules
+        - [x] show default rules
         - [ ] document how to add frontend
         - [ ] document how to add backend
     - [ ] `-H` | `--help-long` for longer help text.
-
-- [ ] Move configuration macros to `config.hpp`
 
 - [ ] Package and Release
     - [ ] use cmake to create relaese in multiple formats

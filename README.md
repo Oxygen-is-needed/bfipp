@@ -22,36 +22,27 @@
 
 
 
-## BF Default Syntax
+## BF Default Rules
 
-- File should end in ".b".
-- Each charactor in file is either a command or ignored.
-    <!-- NOTE: Check for Extended Ascii Charactors? -->
-- Array of 30,000 of intager values (minimally one byte).
-    - Inital value of pointer of zero.
-- Control flow starts at first.
-    - When no more or EOF program terminates.
-- Instructions:
-    - "+" Increment
-    - "-" Decrement
-    - ">" Move Right
-        - At Right Most Cell "Unpredictable"
-    - "<" Move Left
-        - At Right Most Cell "Unpredictable"
-    - Loops
-        - "[" Start Loop
-            - If value at pointer is Zero, goto End Loop.
-        - "]" End Loop
-            - If value at pointer is Non-Zero, goto Start Loop.
-        - Using a Stack would work well.
-        - These Jumps corrispond to a match bracket.
-        - Does not need to add +1 to the PC, since the conditions should always
-          be the same when jumping between the two instructions.
-    - I/O
-        - "." Print
-            - May be Modulo 256.
-        - "," Input
-        - Many different rules here for input from files and output to files.
+
+Execution Rules | Charactor | Name | Description
+:-:|:-:|:-:|---
+ 1 | `+` | Increment | Increment current cell
+ 2 | `-` | Decremet | Decrement current cell
+ 3 | `>` | Move Right | Move to next cell
+ 4 | `<` | Move Left | Move to previous cell
+ 5 | `[` | Start Loop | Checks if current cell is zero, then moves to matching bracket `]`
+ 6 | `]` | End Loop | Checks if current cell is non-zero, then moves back to maching bracket `[`
+ 7 | `.` | Print | Outputs the value of the current cell
+ 8 | `,` | Input | Takes a single char and puts its value in the current cell
+
+VM Rules | Values | Description
+:-:|:-:|---
+ 1 | `tape_length` [uint] | The length of the buffer, used in execution
+ 2 | `eot_wrap` [true/false] | If at either end buffer to wrap to the other end
+
+
+## Documentation
 
 
 ## Contribution

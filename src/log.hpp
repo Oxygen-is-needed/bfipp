@@ -3,12 +3,7 @@
 
 // Log {{{
 namespace Log {
-#define LOG_METHODS       \
-  X(NONE,     0)          \
-  X(VM,       M_BLUE)     \
-  X(BACKEND,  M_MAGENTA)  \
-  X(FRONTEND, M_GREEN)    \
-  X(SETTINGS, M_YELLOW)   \
+#define LOG_METHODS PRINT_LOG_METHODS
 
   enum Log_Methods {
 #define X(a,...) a,
@@ -21,6 +16,7 @@ namespace Log {
     LOG_METHODS
 #undef  X
   };
+
 #undef  LOG_METHODS
 
   const unsigned int verbose_max = 1; ///< Max value that matters for verbose_level

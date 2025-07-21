@@ -448,8 +448,9 @@ class Backend {
     bool (Backend::*init)();
     void (Backend::*use)();
   } Exec_Funcs[1] = {
-    [C_IR] = { &Backend::ir_vm_step, &Backend::ir_vm_setup, &Backend:: ir_vm}
+    [C_IR] = { &Backend::ir_vm_step, &Backend::ir_vm_setup, &Backend::ir_vm}
   };
+
   public:
   void execute_set() {
     if ((this->*Exec_Funcs[0].init)() != true) {

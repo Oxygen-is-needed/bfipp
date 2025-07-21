@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "config.hpp"
 #include "utils.hpp"
 #include "log.hpp"
 #include "escape.hpp"
@@ -17,29 +18,22 @@
 // Args {{{
 namespace Args {
   namespace {
-    // TODO: move to config file
-    // NOTE: edit to configure the arguments and help page text.
-#define KEYS  \
-    X('f', ':', ' ', "file",    required_argument,  nullptr,  "file: Input file.")    \
-    X('h', ' ', ' ', "help",    no_argument,        nullptr,  "Prints helps text.")   \
-    X('i', ':', ':', "input",   required_argument,  nullptr,  "[txt]: Input text.\n\t\tDefault with no arguments.\n\t\t'-' for reading from stdin.")   \
-    X('r', ' ', ' ', "run",     no_argument,        nullptr,  "Run input imediatly.") \
-    X('V', ' ', ' ', "verbose", no_argument,        nullptr,  "Enable verbose output.") \
-    X('v', ' ', ' ', "version", no_argument,        nullptr,  "Print version")
+#define KEYS  PROGRAM_FLAGS
 
     struct option longopts[] = {
-#define X(A,F,G,B,C,D,E)  { B, C, D, A },
+#define X(A,F,G,B,C,E)  { B, C, nullptr, A },
       KEYS
 #undef  X
     };
+
     const char opts[] = {
-#define X(A,F,G,B,C,D,E)  A, F, G,
+#define X(A,F,G,B,C,E)  A, F, G,
       KEYS
 #undef  X
     };
 
     void exec_help() {
-#define X(A,F,G,B,C,D,E)  std::cout << "\t" << "-" << A \
+#define X(A,F,G,B,C,E)  std::cout << "\t" << "-" << A \
       << " | " << "--" << B << "\t - " << E << std::endl;
       KEYS
 #undef  X
