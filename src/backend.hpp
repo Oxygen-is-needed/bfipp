@@ -2,7 +2,7 @@
 #define BACKEND__HPP
 
 #include "utils.hpp"
-#include "error.hpp"
+#include "log.hpp"
 
 
 /* VM {{{ */
@@ -208,7 +208,19 @@ public:
 /* Backend {{{ */
 class Backend {
   // TODO: remove need for macro
-#define STATE(s)	if (state != s) { Error::die("Use of function '", __FUNCTION__, "' in invalid state."); }
+#define STATE(s)                                                               \
+  if (state != s) {                                                            \
+    Log::print(error, "Use of function '", __FUNCTION__,                       \
+               "' in invalid state.");                                         \
+    exit(1);                                                                   \
+  }
+
+  Log::O error = {
+    .v  = 0,
+    .e  = true,
+    .lm = Log::BACKEND,
+  };
+
 public:
 	enum State {
 		SET=0,	///< SET: Settings
@@ -239,8 +251,9 @@ public:
   // TODO: add to arguments
 	void print_rules() {
 		if (state <= SET) return;
-    if (rules.size() <= 0)
-      Error::die("Invalid rule set");
+    if (rules.size() <= 0) {
+      Log::print(error,"Invalid rule set");
+    }
 
 		std::cout << "(CMD, Actions)" << std::endl;
 		for (auto r : rules) {
@@ -304,12 +317,13 @@ public:
 
 		// Open File
 		if (!std::filesystem::exists(filename)) {
-			Error::print("File '", filename, "' does not exist");
+			Log::print(error, "File '", filename, "' does not exist");
 			return;
 		}
     std::ifstream fd(filename);
 		if (!fd.is_open()) {
-			Error::die("File Descriptor for '", filename, "' was not openend");
+			Log::print(error, "File Descriptor for '", filename, "' was not openend");
+      exit(1);
 		}
 
 		// Sanitize and Append code
@@ -321,7 +335,8 @@ public:
 		fd.close();
 
 		if (code.empty()) {
-			Error::die("File empty or full of unrealted charactors.");
+			Log::print(error, "File empty or full of unrealted charactors.");
+      exit(1);
 		}
 
 		state = CON;
@@ -355,9 +370,12 @@ public:
     // TODO: add file out
 		//if (!output.empty()) {}
 		conversion_method = con;
-		if (code.empty())
-			Error::die("Unable to interpret nothing. Code string is empty.");
-        	convert_string2ir(code);
+		if (code.empty()) {
+      Log::print(error, "Unable to interpret nothing. Code string is empty.");
+      exit(1);
+    }
+
+    convert_string2ir(code);
 
 		state = EXE;
 	}
@@ -369,16 +387,25 @@ private:
 	std::vector<VM> vm_list;
 
 	bool ir_vm_step() {
-		if (vm_using != true || vm_list.empty()) { Error::die("VM has not been initalized!"); }
+    if (vm_using != true || vm_list.empty()) {
+      Log::print(error, "VM has not been initalized!");
+      exit(1);
+    }
 
 		return vm_list[0].step();
 	}
 	bool ir_vm_setup() {
-		if (rules.empty() || instructions.empty()) { Error::die("Invalid Rules and/or Instructions setup."); } 
+    if (rules.empty() || instructions.empty()) {
+      Log::print(error, "Invalid Rules and/or Instructions setup.");
+      exit(1);
+    }
 
-		if (!vm_list.empty()) Error::die("TODO: cannot have multiple VM's at once.");
+    if (!vm_list.empty()) {
+      Log::print(error, "TODO: cannot have multiple VM's at once.");
+      exit(1);
+    }
 
-		VM vm(rules, instructions);
+                VM vm(rules, instructions);
 		vm_list.push_back(vm);
 		vm_using = true;
 
@@ -386,8 +413,11 @@ private:
 	}
 	void ir_vm() {
 		ir_vm_setup();
-		if (vm_using != true || vm_list.empty()) { Error::die("VM has not been initalized!"); }
-	}
+    if (vm_using != true || vm_list.empty()) {
+      Log::print(error, "VM has not been initalized!");
+      exit(1);
+    }
+  }
 
 	struct {
 		bool (Backend::*step)();
@@ -399,7 +429,8 @@ private:
 public:
 	void execute_set() {
 		if ((this->*Exec_Funcs[0].init)() != true) {
-      Error::die("Invalid Initalization");
+      Log::print(error, "Invalid Initalization");
+      exit(1);
     }
 	}
 	bool execute_step() {
@@ -412,7 +443,10 @@ public:
 		(this->*Exec_Funcs[0].use)();
 	}
 	VM& get_vm() {
-		if (vm_list.empty()) Error::die("Cannot get a VM that is not initalized.");
+		if (vm_list.empty()) {
+      Log::print(error, "Cannot get a VM that is not initalized.");
+      exit(1);
+    }
 		VM& vm = vm_list[0];
 		return vm;
 	}

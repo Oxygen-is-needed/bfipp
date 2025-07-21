@@ -57,18 +57,18 @@ namespace Args {
   enum Frontend::Frontend_Index frontend = Frontend::TERM_SIMPLE;
   std::string text = "";
 
-  bool use_text() {
-    if (text.empty() == true) {
-      Error::print("No code input specified.");
-      return false;
-    }
-    return true;
-  }
-
   Log::O verbose = {
     .v = 1,
     .lm = Log::SETTINGS,
   };
+
+  bool use_text() {
+    if (text.empty() == true) {
+      Log::print({.e=true,.lm=Log::SETTINGS}, "No code input specified.");
+      return false;
+    }
+    return true;
+  }
 
   // TODO: check optarg does not equal nullptr
   void arguments(int argc, char* argv[]) {

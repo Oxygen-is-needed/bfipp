@@ -113,7 +113,8 @@
 - Main
     - Option to output parsed file
     - REPL for BF
-    - Verbose levels
+    - Change bf rules
+    - output/input bf rules from file
 - Backend
     - Remove need for seek and seekb operations.
         - Have rule for the charactors to seek in those functions

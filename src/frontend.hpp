@@ -1,8 +1,8 @@
 #ifndef FRONTEND__HPP
 #define FRONTEND__HPP
 
-#include "error.hpp"
 #include "utils.hpp"
+#include "log.hpp"
 
 
 // Frontend Utilities {{{
@@ -29,7 +29,7 @@ namespace None {
 // }}}
 // Simple_Text_Frontend {{{
 namespace Simple_Text_Frontend {
-  // TODO: move to config file (maybe?)
+  // TODO: move to config file
   // NOTE: edit to configure the keybindings
 #define KEYS  \
     X(QUIT,   'q',  "Quit Frontend.") \
@@ -214,8 +214,10 @@ namespace Frontend {
 
 	void frontend(Backend backend, enum Frontend_Index fi) {
 		if (backend.state != Backend::EXE) {
-			Error::die("Program: Frontend self-incrementing of backend status not supported.\n"
+			Log::print(error,
+          "Program: Frontend self-incrementing of backend status not supported.\n"
           "Will need to increment status to Execution.");
+      exit(1);
 		}
 
 		execution_loop(backend, fi);
