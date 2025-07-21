@@ -3,9 +3,11 @@
 #include <getopt.h>
 #include <iostream>
 #include <limits>
+#include <print>
 #include <stack>
 #include <string>
 #include <vector>
+#include <cctype>
 
 #include "config.hpp"
 #include "utils.hpp"
@@ -32,9 +34,17 @@ namespace Args {
 #undef  X
     };
 
+    namespace {
+      void exec_help_helper(const int &opt, const std::string_view &flag,
+          const std::string_view &msg){
+        std::cout << "\t" << "-" << (char)opt << " | --" << flag << "\t - " << msg
+          << std::endl;
+        return;
+      }
+    }
+
     void exec_help() {
-#define X(A,F,G,B,C,E)  std::cout << "\t" << "-" << A \
-      << " | " << "--" << B << "\t - " << E << std::endl;
+#define X(A, F, G, B, C, E) exec_help_helper(A, B, E);
       KEYS
 #undef  X
     }
@@ -59,13 +69,47 @@ namespace Args {
     .v = 1,
     .lm = Log::SETTINGS,
   };
+  Log::O error = {
+    .e = true,
+    .lm = Log::SETTINGS
+  };
 
   bool use_text() {
     if (text.empty() == true) {
-      Log::print({.e=true,.lm=Log::SETTINGS}, "No code input specified.");
+      Log::print(error, "No code input specified.");
       return false;
     }
     return true;
+  }
+
+  void list_frontends() {
+    Log::print(verbose, "Listing available frontends.\n\tNOTE: case does not "
+                        "matter when choosing one.");
+    for (int x=0; x<FRONTEND_LENGTH; x++) {
+      std::println("\t{:2}| {}", x+1, Frontend::functions[x].name);
+    }
+  }
+
+  bool choose_frontend(std::string method) {
+    try {
+      int num = std::stoi(method);
+      if (num > 0 && num <= FRONTEND_LENGTH) {
+        frontend = static_cast<Frontend::Frontend_Index>(num-1);
+        return true;
+      }
+    } catch (std::invalid_argument& e) {
+    }
+
+    std::transform(method.begin(), method.end(), method.begin(), ::toupper);
+
+    for (int x=0; x<FRONTEND_LENGTH; x++) {
+      if (Frontend::functions[x].name == method) {
+        frontend = static_cast<Frontend::Frontend_Index>(x);
+        return true;
+      }
+    }
+
+    return false;
   }
 
   // TODO: check optarg does not equal nullptr
@@ -108,6 +152,21 @@ namespace Args {
         case 'r':
           frontend = Frontend::NONE;
           Log::print(verbose, "Enabled run mode");
+          break;
+        case 'F':
+          if (optarg != nullptr) {
+            if (choose_frontend(optarg) == false) {
+              Log::print(error, "Unable to find frontend method");
+              exit(1);
+            }
+            Log::print(verbose, "Changed frontend to ",
+                       Frontend::functions[frontend].name);
+            break;
+          }
+          [[fallthrough]];
+        case 'l':
+          list_frontends();
+          exit(0);
           break;
 
           // OTHER

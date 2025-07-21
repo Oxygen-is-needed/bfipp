@@ -17,7 +17,7 @@ namespace Frontend_Utils {
 
 // None {{{
 namespace None {
-  void frontend(Backend backend) {
+  void frontend(Backend& backend) {
     VM& got_vm = backend.get_vm();
     got_vm.run();
 
@@ -25,8 +25,8 @@ namespace None {
   }
 }
 // }}}
-// Simple_Text_Frontend {{{
-namespace Simple_Text_Frontend {
+// SimpleTextFrontend {{{
+namespace SimpleTextFrontend {
 #define KEYS  FRONTEND_KEYS__SIMPLE_TEXT
 
   enum Keybinds {
@@ -70,7 +70,7 @@ namespace Simple_Text_Frontend {
     }
   }
 
-  void inspect_instructions(Backend backend, unsigned int cap, unsigned int pc) {
+  void inspect_instructions(Backend& backend, unsigned int cap, unsigned int pc) {
     unsigned int len = cap;
     unsigned int frame_len = 9;
     unsigned int sub = 4;
@@ -117,7 +117,7 @@ namespace Simple_Text_Frontend {
     C::show_cursor();
   }
 
-  void frontend(Backend backend) {
+  void frontend(Backend& backend) {
     VM& got_vm = backend.get_vm();
     out = got_vm.output;
 
@@ -130,7 +130,7 @@ namespace Simple_Text_Frontend {
     unsigned int skip = 0;
     unsigned int wait = 0;
     C::hide_cursor();
-    Unwind::add_unwind({unwind, "Simple_Text_Frontend::unwind"});
+    Unwind::add_unwind({unwind, "SimpleTextFrontend::unwind"});
     while(ret != false) {
       if (user_guided == true && skip_i++ >= skip
           && (wait == 0 || wait < got_vm.ins_i)) {
@@ -183,15 +183,20 @@ namespace Frontend {
 #undef  X
   };
 
-  void (*frontend_funcs[])(Backend) = {
-#define X(A,B)  B,
+  struct Functions {
+    const std::string_view name;
+    void (*const func)(Backend&);
+  };
+  struct Functions functions[] = {
+#define X(A,B)  { .name = STR(A) , .func = B },
     CONFIG
 #undef  X
   };
-  void execution_loop(Backend backend, enum Frontend_Index fi) {
+
+  void execution_loop(Backend& backend, enum Frontend_Index fi) {
     backend.execute_set();
 
-    frontend_funcs[fi](backend);
+    functions[fi].func(backend);
   }
 #undef  CONF
 #undef  CONFIG
@@ -201,7 +206,7 @@ namespace Frontend {
     .lm = Log::FRONTEND,
   };
 
-  void frontend(Backend backend, enum Frontend_Index fi) {
+  void frontend(Backend& backend, enum Frontend_Index fi) {
     if (backend.state != Backend::EXE) {
       Log::print(error,
           "Program: Frontend self-incrementing of backend status not supported.\n"

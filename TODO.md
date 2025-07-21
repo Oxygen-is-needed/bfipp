@@ -60,7 +60,7 @@
     - [x] Remove debug macros
     - [x] Signal Catching
 
-- [ ] General
+- [x] General
     - [x] Add/Fix Logging
         - [x] with verbose logging levels as well
         - [x] loging method prefix
@@ -75,8 +75,13 @@
             - [x] what happens at end of tape
         - [x] Pass to VM as constructor
     - [x] Create VM destructor
-    - [ ] Easier way to add front/backend
-    - [ ] Investigate mannor to load module for frontend/backend
+    - [x] Easier way to add front/backend
+        - [x] add choose frontend
+            - [x] number
+            - [x] name
+        - [x] list frontends
+    - [x] Investigate mannor to load module for frontend/backend cross platform
+        - will have to implement for each <https://blog.theopnv.com/posts/cpp-dynamic-loading/>
 
 - [x] Move configuration macros to `config.hpp`
 
@@ -85,7 +90,7 @@
 - [ ] Documentation
     - [ ] Improve README
         - [x] show default rules
-        - [ ] document how to add frontend
+        - [x] document how to add frontend
         - [ ] document how to add backend
     - [ ] `-H` | `--help-long` for longer help text.
 
@@ -96,8 +101,8 @@
     - [ ] add: github Releases
 
 - [ ] Wrap Up
-    - [ ] Clean up code
-    - [ ] Update README.md
+    - [x] Clean up code
+    - [x] Update README.md
     - [ ] Detect Unused Code
     - [ ] Look at TODO's
     - [ ] Update Version Number

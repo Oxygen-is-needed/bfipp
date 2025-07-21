@@ -6,6 +6,14 @@
 #define _STR(x)	#x
 #define STR(x)	_STR(x)
 
+
+#define X(A,...)  1,
+#define COUNT(...)  (sizeof((int[]){__VA_ARGS__}) / sizeof(int))
+const int __frontend_config_len = COUNT(FRONTEND_CONFIG);
+#define FRONTEND_LENGTH __frontend_config_len
+#undef  COUNT
+#undef  X
+
 // Colors {{{
 namespace C {
 #define M_RESET		  0
