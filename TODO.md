@@ -55,7 +55,7 @@
             - Investigate better methods
         - [x] Use `nullptr` instead of `NULL`
         - [x] Prefer not to use anonymous namespaces
-            - https://stackoverflow.com/questions/4977252/why-an-unnamed-namespace-is-a-superior-alternative-to-static
+            - <https://stackoverflow.com/questions/4977252/why-an-unnamed-namespace-is-a-superior-alternative-to-static>
         - [x] Remove need of `using namespace std;`
     - [x] Remove debug macros
     - [x] Signal Catching
@@ -75,17 +75,19 @@
             - [x] what happens at end of tape
         - [x] Pass to VM as constructor
     - [x] Create VM destructor
-    - [ ] Easier way to add front
+    - [x] Easier way to add front
         - [x] add choose frontend
             - [x] number
             - [x] name
-        - [ ] list frontends
-            - [ ] add description of each
-            - [ ] add description of frontends
-            - [ ] list each
-    - [ ] `config.hpp` change backend
+        - [x] list frontends
+            - [x] add description of frontends
+            - [x] list each
     - [x] Investigate mannor to load module for frontend/backend cross platform
         - will have to implement for each <https://blog.theopnv.com/posts/cpp-dynamic-loading/>
+    - [ ] Add Backend Output Methods
+        - [ ] Have frontend accept VM instead of backend?
+        - [ ] Backend output whats neccessary for VM? - vm.export()
+        - [ ] Reduce/Remove excess code for multiple `Exec_funcs`
 
 - [x] Move configuration macros to `config.hpp`
 
@@ -94,22 +96,17 @@
 - [ ] Documentation
     - [ ] Improve README
         - [x] show default rules
-        - [ ] UPDATE: document how to add frontend
+        - [x] UPDATE: document how to add frontend
         - [ ] document how to add backend
     - [ ] `-H` | `--help-long` for longer help text.
         - [x] Normal Help
         - [x] Frontend Help
-        - [ ] Descriptions
+        - [x] Descriptions
         - [ ] Note at bottom to route into less (or windows equivilant)
     - [ ] Examples
         - [ ] How to use frontends
         - [ ] How to use Windows | Linux
 
-- [ ] Package and Release
-    - [ ] use cmake to create relaese in multiple formats
-        - [ ] Windows
-        - [ ] Linux
-    - [ ] add: github Releases
 
 - [ ] Wrap Up
     - [x] Clean up code
@@ -119,6 +116,11 @@
     - [ ] Look at TODO's
     - [ ] Update Version Number
 
+- [ ] Package and Release
+    - [x] use cmake to create relaese in multiple formats
+        - [x] Windows
+        - [x] Linux
+    - [ ] add: github Releases
 
 
 

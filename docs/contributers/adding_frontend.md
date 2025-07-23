@@ -2,8 +2,8 @@
 
 ## Steps
 
-1. Develop a new function that takes the Backend class as an argument.
-2. Include the function and the macro named `FRONTEND_CONFIG` in `config.hpp`.
+1. Develop a new function(s) that takes the Backend class as an argument.
+2. Include the functions in the macro named `FRONTEND_CONFIG` in `config.hpp`.
 3. That's it!
 
 The most challenging aspect will be creating a new function that accepts the
@@ -74,16 +74,45 @@ You can utilize these values, derived from the `VM` class to get pretty much all
 neccessary information for creating a frontend.
 
 
+### Creating a help function (Optional)
+
+Since this is optional, the implementation will remain more general.
+
+To create a help function, you can utilize the keys macro along with the
+corresponding descriptions for each key, and employ the `Utils::print_help()`
+function. This can be implemented as follows:
+
+```cpp
+#define FRONTEND_KEYS__YOUR_FRONT \
+    X(QUIT, 'q', "Quit")
+
+#define X(A,B,C)    Utils::print_help, B, "", C, false);
+    FRONTEND_KEYS_YOUR_FRONT
+#undef  X
+```
+
+
 ## Adding to `FRONTEND_CONFIG`
 
-Next, you need to incorporate your new function into the `FRONTEND_CONFIG` macro
-located in `config.hpp`. This task is quite straightforward. Simply create a
-brief name for your frontend (preferably 8 to 12 characters long) and add it to
-the macro list in all uppercase letters. The case of the name does not matter
-when choosing it within the program. Next to it, include the function name. It
-should look like this:
+Next, you need to integrate your new function into the `FRONTEND_CONFIG` macro
+found in `config.hpp`. This process is quite simple. Just create a short name
+for your frontend (ideally between 8 to 12 characters) and add it to the macro
+list in uppercase letters. The case of the name is not significant when
+referenced in the program.
+
+Alongside it, include the function name, which serves as the entry point for the
+frontend. You can also add either your help function or a `nullptr` if you
+prefer to omit it.
+
+The final argument is the description of your frontend, which will be used when
+listing the available frontends. If you wish to skip this, you can simply use
+`""` instead of providing an actual description.
+
+This could resemble the following example, with the first being the bare
+minimum:
 
 ```cpp
 #define FRONTEND_CONFIG \
-  X(YOUR_FRONT, YOUR_FRONT::frontend)
+  X(NONE, None::frontend, nullptr, "") \
+  X(YOUR_FRONT, YourFront::frontend, YourFront::help, "Your frontend description")
 ```

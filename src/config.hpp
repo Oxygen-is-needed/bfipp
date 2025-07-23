@@ -6,9 +6,13 @@
 #define NT "\t\t\t\t"
 #define NL "\n" NT
 
+#define FRONTEND_DESCRIPTION                                                   \
+  "Select a frontend to modify how the code is displayed during execution\n"    \
+  "(or even how if it is viewed)."
 #define FRONTEND_CONFIG                                                        \
-  X(NONE, None::frontend, nullptr)                                             \
-  X(TERM_SIMPLE, SimpleTextFrontend::frontend, SimpleTextFrontend::help)
+  X(NONE, None::frontend, nullptr, "Just run and print program output.")       \
+  X(TERM_SIMPLE, SimpleTextFrontend::frontend, SimpleTextFrontend::help,       \
+    "A simple terminal frontend.")
 
 #define BACKEND_CONFIG
 

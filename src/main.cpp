@@ -93,10 +93,23 @@ namespace Args {
   }
 
   void list_frontends() {
+    const std::string_view description[] = {
+#define X(A,B,C,D,...)  D,
+      FRONTEND_CONFIG
+#undef  X
+    };
+
     Log::print(verbose, "Listing available frontends.\n\tNOTE: case does not "
                         "matter when choosing one.");
+
+    std::cout << FRONTEND_DESCRIPTION "\n";
     for (int x=0; x<FRONTEND_LENGTH; x++) {
-      std::println("\t{:2}| {}", x+1, Frontend::functions[x].name);
+      if (!description[x].empty()) {
+        std::println("\t{:2}| {:16} - {}", x+1, Frontend::functions[x].name, description[x]);
+        continue;
+      }
+
+      std::println("\t{:2}| {:16}", x+1, Frontend::functions[x].name);
     }
   }
 
