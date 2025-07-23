@@ -5,16 +5,22 @@
 class VM {
   public:
     struct Rule {
-      char cmd;
-      std::vector<unsigned char> findex;
+      char cmd; ///< Charactor identifier used to identify Rule
+      std::vector<unsigned char> findex; ///< Index into VM instructions
     };
-
 
     struct Rules {
       unsigned int tape_length = 30000; ///< Length of tape
       bool eot_wrap = true; ///< Does tape rap at end of tape
-      std::vector<Rule> r;
+      std::vector<Rule> r;  ///< Array of rules to follow
     };
+
+    struct Import {
+      Rules& r; ///< Set of rules
+      std::vector<unsigned char> i; ///< Set of instructions to run
+      std::string& c; ///< Code before conversion
+    };
+
 
     enum Funcs {
       INC,    ///< INCrement data at program pointer
@@ -33,16 +39,15 @@ class VM {
     };
 
     Rules rules;
+    std::string_view code;
     std::vector<unsigned char> instructions;
     unsigned int ins_max;
     unsigned int ins_i=0;
     unsigned int total_steps=0;
     std::string output;
     unsigned int pc=0;
-  private:
-    // TODO: make buffer dynamic at VM initalization.
-#define BUF_LEN 30000
     unsigned char* buffer;
+  private:
     std::stack<int> jump_list;
 
     /* Functions {{{ */
@@ -162,15 +167,16 @@ class VM {
       }
     }
   public:
-    VM(Rules r, std::vector<unsigned char> i)
-      : buffer(new unsigned char[r.tape_length] {0}) {
-        rules.tape_length = r.tape_length;
-        rules.tape_length = r.tape_length;
-        rules.r.assign(r.r.begin(), r.r.end());
+    VM(struct Import i) : buffer(new unsigned char[i.r.tape_length]{0}) {
+      rules.tape_length = i.r.tape_length;
+      rules.tape_length = i.r.tape_length;
+      rules.r.assign(i.r.r.begin(), i.r.r.end());
 
-        instructions.assign(i.begin(), i.end());
-        ins_max = instructions.size();
-      }
+      instructions.assign(i.i.begin(), i.i.end());
+      ins_max = instructions.size();
+
+      code = i.c;
+    }
     ~VM() {}
 
     bool step() {
@@ -182,60 +188,17 @@ class VM {
       ins_i++;
       return true;
     }
+
     void run() {
       while(step() == true);
-    }
-
-
-    // TODO: should move to frontend?
-    unsigned int inspect_buffer(ssize_t mwidth=100, int view_frame=14) {
-      if (mwidth == -1) {
-        mwidth = std::numeric_limits<int>::max();
-      }
-
-      int width=view_frame;
-      unsigned int out=5;
-      std::cout << total_steps << ": ";
-      unsigned int y=0;
-      for (int x=0; x<width && y<mwidth && y<rules.tape_length; x++,y++) {
-        if (buffer[y] != 0) {
-          x=0;
-        }
-
-        std::string code = "";
-        if (buffer[y] != 0) {
-          if (isprint(buffer[y]) == 0 || buffer[y] == ' ') {
-            code = std::to_string(buffer[y]);
-          } else  {
-            code += buffer[y];
-          }
-        }
-
-        if (pc == y) {
-          std::cout << C::B << "{" << C::Y
-            << code
-            << C::B << "} " << C::RESET;
-          continue;
-        }
-
-        std::cout << "[" << code << "] ";
-      }
-      std::cout << std::endl;
-      out += 4*y;
-      return out;
     }
 };
 /* }}} */
 
 /* Backend {{{ */
 class Backend {
-  // TODO: remove need for macro
-#define STATE(s)                                                               \
-  if (state != s) {                                                            \
-    Log::print(error, "Use of function '", __FUNCTION__,                       \
-        "' in invalid state.");                                         \
-    exit(1);                                                                   \
-  }
+  private:
+#define STATE(s)  check_state(s, STR(__FUNCTION__))
 
   Log::O error = {
     .v  = 0,
@@ -250,6 +213,11 @@ class Backend {
     CON=2,	///< Convert IR: Convert to IR
     EXE=3,	///< EXEcute: EXEcute code and or EXport.
   } state=SET;
+
+  void check_state(enum State s, std::string_view func) {
+    Log::print(error, "Use of function '", __FUNCTION__, "' in invalid state.");
+    exit(1);
+  }
 
   /* SET {{{ */
   private:
@@ -272,14 +240,16 @@ class Backend {
     state = GET;
   }
 
-  // TODO: add to arguments
   void print_rules() {
     if (state <= SET) return;
     if (rules.r.size() <= 0) {
       Log::print(error,"Invalid rule set");
     }
 
-    std::cout << "(CMD, Actions)" << std::endl;
+    std::cout << "Tape Length: " << rules.tape_length << '\n';
+    std::cout << "Wrap @EOT: " << rules.eot_wrap << '\n';
+
+    std::cout << "(CMD, Actions)\n";
     for (auto r : rules.r) {
       std::cout << " " << r.cmd << " = {";
       int len = r.findex.size()-1;
@@ -288,7 +258,7 @@ class Backend {
           std::cout << r.findex[len] << ",";
         }
       }
-      std::cout << r.findex[len] << "}" << std::endl;
+      std::cout << r.findex[len] << "}\n";
     }
   }
   /* }}} */
@@ -368,11 +338,6 @@ class Backend {
   /* }}} */
 
   /* CON {{{ */
-  enum Conversion {
-    C_NONE	= -1,
-    C_IR	=  0,
-  };
-  enum Conversion conversion_method = C_NONE;
   private:
   std::vector<unsigned char> instructions;
   void convert_string2ir(std::string s) {
@@ -387,13 +352,9 @@ class Backend {
   }
   public:
 
-  // TODO: other methods of conversion from IR.
-  void convert(enum Conversion con=C_IR /*,std::string output=""*/) {
+  void convert() {
     STATE(CON);
 
-    // TODO: add file out
-    //if (!output.empty()) {}
-    conversion_method = con;
     if (code.empty()) {
       Log::print(error, "Unable to interpret nothing. Code string is empty.");
       exit(1);
@@ -406,74 +367,8 @@ class Backend {
   /* }}} */
 
   /* EXE {{{ */
-  private:
-  bool vm_using = false;
-  std::vector<VM> vm_list;
-
-  bool ir_vm_step() {
-    if (vm_using != true || vm_list.empty()) {
-      Log::print(error, "VM has not been initalized!");
-      exit(1);
-    }
-
-    return vm_list[0].step();
-  }
-  bool ir_vm_setup() {
-    if (rules.r.empty() || instructions.empty()) {
-      Log::print(error, "Invalid Rules and/or Instructions setup.");
-      exit(1);
-    }
-
-    if (!vm_list.empty()) {
-      Log::print(error, "TODO: cannot have multiple VM's at once.");
-      exit(1);
-    }
-
-    VM vm(rules, instructions);
-    vm_list.push_back(vm);
-    vm_using = true;
-
-    return true;
-  }
-  void ir_vm() {
-    ir_vm_setup();
-    if (vm_using != true || vm_list.empty()) {
-      Log::print(error, "VM has not been initalized!");
-      exit(1);
-    }
-  }
-
-  struct {
-    bool (Backend::*step)();
-    bool (Backend::*init)();
-    void (Backend::*use)();
-  } Exec_Funcs[1] = {
-    [C_IR] = { &Backend::ir_vm_step, &Backend::ir_vm_setup, &Backend::ir_vm}
-  };
-
-  public:
-  void execute_set() {
-    if ((this->*Exec_Funcs[0].init)() != true) {
-      Log::print(error, "Invalid Initalization");
-      exit(1);
-    }
-  }
-  bool execute_step() {
-    return (this->*Exec_Funcs[0].step)();
-  }
-  void execute(/*Conversion em=C_IR*/) {
-    STATE(EXE);
-
-    execute_set();
-    (this->*Exec_Funcs[0].use)();
-  }
-  VM& get_vm() {
-    if (vm_list.empty()) {
-      Log::print(error, "Cannot get a VM that is not initalized.");
-      exit(1);
-    }
-    VM& vm = vm_list[0];
-    return vm;
+  struct VM::Import export_vm(void) {
+    return {.r = rules, .i = instructions, .c = code};
   }
   /* }}} */
 };

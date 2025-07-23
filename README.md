@@ -7,19 +7,54 @@
 <img alt="bfi++" src="img/logo.svg" width=50%></img>
 </div>
 
+`bfi++` is a Brainf\*\*\* interpreter and virtual machine designed for
+adaptability and extensibility, offering multiple frontends to visualize memory
+and code execution.
+
+> [!WARNING]
+>
+> Project is not fully completed, nor documented, and is prone to frequent
+> changes. Proceed at your own risk.
 
 ## Program Usage
 
 ```
-    -f | --file      - file: Input file.
-    -h | --help      - Prints helps text.
-    -i | --input     - [txt]: Input text. Default with no arguments.
-                        '-' for reading from stdin.
-    -r | --run       - Run input imediatly.
-    -V | --verbose   - Enable verbose output.
-    -v | --version   - Print version
+        -f | --file          - file: Input file.
+        -h | --help          - Prints helps text.
+        -H | --lhelp         - Prints extra helps text.
+        -i | --input         - [txt]: Input text.
+                                Default with no arguments.
+                                Use '-' for reading from stdin.
+        -r | --run           - Run input imediatly, using no frontend.
+        -V | --verbose       - Enable verbose output.
+        -v | --version       - Print version
+        -l | --list-fronts   - List all available frontends.
+        -F | --frontend      - Change the frontend used to render.
+                                Use no arguments to list frontends.
 ```
 
+
+## Quickstart
+
+To get started quickly using the program use the following arguments:
+
+```bash
+./bfipp -i
+```
+
+This will use the default frontend (SimpleText) and the hello world program.
+This will get you the bare minimum to get it running. To get more information
+use the following commands.
+
+```bash
+./bfipp -h  # Prints basic help arguments
+./bfipp -H  # Prints extended help, including help for the frontends
+```
+
+For more program to run here are some locations to look:
+
+- <http://www.brainfuck.org/>
+- <https://github.com/rdebath/Brainfuck/>
 
 
 ## BF Default Rules

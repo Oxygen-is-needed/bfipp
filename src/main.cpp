@@ -72,7 +72,7 @@ namespace Args {
     NONE, FILE, TEXT, HELLO
   };
   enum Get_Status gstat=NONE;
-  enum Frontend::Frontend_Index frontend = Frontend::TERM_SIMPLE;
+  enum Frontend::Frontend_Index frontend = Frontend::SIMPLE_TEXT;
   std::string text = "";
 
   Log::O verbose = {
@@ -135,7 +135,6 @@ namespace Args {
     return false;
   }
 
-  // TODO: check optarg does not equal nullptr
   void arguments(int argc, char* argv[]) {
     int opt = 0;
     while ((opt = getopt_long(argc, argv, opts, longopts, nullptr)) != -1) {
@@ -149,12 +148,17 @@ namespace Args {
           exec_help();
           exit(0);
         case 'v':
+          print_version();
           exit(0);
           break;
 
           // INPUT
         case 'f':
           gstat = FILE;
+          if (optarg == nullptr) {
+            Log::print(error, "Optarg was set to null. No file was provided.");
+            exit(1);
+          }
           text = optarg;
           Log::print(verbose, "Enabled input from file");
           break;
@@ -197,7 +201,6 @@ namespace Args {
 
           // OTHER
         case 'V':
-          // TODO: add optional argument to set level of verbose
           Log::verbose_level = Log::verbose_max;
           Log::print(verbose, "Enabled Verbose");
           break;
@@ -213,6 +216,9 @@ int main(int argc, char* argv[]) {
 
   // Set Settings
   Backend bf;
+  if (Log::verbose_level == 2) {
+    bf.print_rules();
+  }
 
   // Get input /* Ignoring non program charactors */
   switch(Args::gstat) {
@@ -243,7 +249,7 @@ int main(int argc, char* argv[]) {
 
   // Convert to IR
   Log::print({.v=1,.lm=Log::BACKEND},"Converting to IR representation");
-  bf.convert(Backend::C_IR);
+  bf.convert();
 
   // Execute (Option for stepping through)
   Log::print({.v=1,.lm=Log::FRONTEND}, "Running frontend");

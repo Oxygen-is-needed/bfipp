@@ -12,16 +12,52 @@ namespace Frontend_Utils {
       << C::M << "\n============" << C::RESET << std::endl;
     fflush(stdout);
   }
+
+  unsigned int inspect_buffer(VM& vm, ssize_t mwidth=100, int view_frame=14) {
+    if (mwidth == -1) {
+      mwidth = std::numeric_limits<int>::max();
+    }
+
+    int width=view_frame;
+    unsigned int out=5;
+    std::cout << vm.total_steps << ": ";
+    unsigned int y=0;
+    for (int x=0; x<width && y<mwidth && y<vm.rules.tape_length; x++,y++) {
+      if (vm.buffer[y] != 0) {
+        x=0;
+      }
+
+      std::string code = "";
+      if (vm.buffer[y] != 0) {
+        if (isprint(vm.buffer[y]) == 0 || vm.buffer[y] == ' ') {
+          code = std::to_string(vm.buffer[y]);
+        } else  {
+          code += vm.buffer[y];
+        }
+      }
+
+      if (vm.pc == y) {
+        std::cout << C::B << "{" << C::Y
+          << code
+          << C::B << "} " << C::RESET;
+        continue;
+      }
+
+      std::cout << "[" << code << "] ";
+    }
+    std::cout << std::endl;
+    out += 4*y;
+    return out;
+  }
 }
 // }}}
 
 // None {{{
 namespace None {
-  void frontend(Backend& backend) {
-    VM& got_vm = backend.get_vm();
-    got_vm.run();
+  void frontend(VM& vm) {
+    vm.run();
 
-    Frontend_Utils::print_output(got_vm.output);
+    Frontend_Utils::print_output(vm.output);
   }
 }
 // }}}
@@ -68,8 +104,10 @@ namespace SimpleTextFrontend {
     }
   }
 
-  void inspect_instructions(Backend& backend, unsigned int cap, unsigned int pc) {
+  void inspect_instructions(VM& vm) {
+    unsigned int cap = vm.ins_max;
     unsigned int len = cap;
+    unsigned int pc = vm.ins_i;
     unsigned int frame_len = 9;
     unsigned int sub = 4;
     unsigned int start;
@@ -92,13 +130,13 @@ namespace SimpleTextFrontend {
       if (x == pc) {
         std::cout
           << C::BLUE << "["
-          << C::YELLOW << backend.code[x]
+          << C::YELLOW << vm.code[x]
           << C::BLUE << "]" << C::RESET;
         continue;
       }
       std::cout
         << C::BLUE << "[" << C::RESET
-        << backend.code[x]
+        << vm.code[x]
         << C::BLUE << "]" << C::RESET;
     }
     std::cout << "\n   ";
@@ -115,12 +153,11 @@ namespace SimpleTextFrontend {
     C::show_cursor();
   }
 
-  void frontend(Backend& backend) {
-    VM& got_vm = backend.get_vm();
-    out = got_vm.output;
+  void frontend(VM& vm) {
+    out = vm.output;
 
-    got_vm.inspect_buffer();
-    inspect_instructions(backend, got_vm.ins_max, got_vm.ins_i);
+    Frontend_Utils::inspect_buffer(vm);
+    inspect_instructions(vm);
     bool user_guided = true;
     bool ret = true;
     int phelp = false;
@@ -131,7 +168,7 @@ namespace SimpleTextFrontend {
     Unwind::add_unwind({unwind, "SimpleTextFrontend::unwind"});
     while(ret != false) {
       if (user_guided == true && skip_i++ >= skip
-          && (wait == 0 || wait < got_vm.ins_i)) {
+          && (wait == 0 || wait < vm.ins_i)) {
         skip_i = 0;
         char in = getchar();
         std::string input;
@@ -142,9 +179,9 @@ namespace SimpleTextFrontend {
 
         C::clear();
 
-        got_vm.inspect_buffer(-1);
-        inspect_instructions(backend, got_vm.ins_max, got_vm.ins_i);
-        std::cout << "\nOutput: " << got_vm.output;
+        Frontend_Utils::inspect_buffer(vm, -1);
+        inspect_instructions(vm);
+        std::cout << "\nOutput: " << vm.output;
 
         if (phelp > 0) {
           help();
@@ -154,11 +191,11 @@ namespace SimpleTextFrontend {
         std::cout << std::endl;
 
       }
-      ret = got_vm.step();
+      ret = vm.step();
     }
     C::show_cursor();
 
-    Frontend_Utils::print_output(got_vm.output);
+    Frontend_Utils::print_output(vm.output);
     Unwind::pop_unwind();
   }
 
@@ -169,10 +206,6 @@ namespace SimpleTextFrontend {
 // Frontend {{{
 namespace Frontend {
 #define CONFIG  FRONTEND_CONFIG
-
-  /**
-   * define CONF - adds _LEN enum, to show amount in enum.
-   */
 #define CONF  \
   CONFIG  \
   X(_LEN, nullptr)
@@ -186,7 +219,7 @@ namespace Frontend {
 
   struct Functions {
     const std::string_view name;
-    void (*const func)(Backend&);
+    void (*const func)(VM&);
   };
   struct Functions functions[] = {
 #define X(A,B,...)  { .name = STR(A) , .func = B },
@@ -194,13 +227,9 @@ namespace Frontend {
 #undef  X
   };
 
-  void execution_loop(Backend& backend, enum Frontend_Index fi) {
-    backend.execute_set();
-
-    functions[fi].func(backend);
-  }
 #undef  CONF
 #undef  CONFIG
+
 
   const Log::O error = {
     .e = true,
@@ -215,7 +244,9 @@ namespace Frontend {
       exit(1);
     }
 
-    execution_loop(backend, fi);
+    VM vm(backend.export_vm());
+
+    functions[fi].func(vm);
   }
 };
 // }}}

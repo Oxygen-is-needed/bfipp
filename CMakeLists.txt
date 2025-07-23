@@ -1,21 +1,18 @@
 cmake_minimum_required(VERSION 3.14)
 
 project(bfipp LANGUAGES CXX VERSION 1.1.0 )
-set(VRESION_PRE "-pre")
+set(VRESION_PRE "")
 
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-set(CMAKE_CXX_COMPILER g++)
 set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 
 set(CMAKE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/pkg)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/pkg)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/pkg)
 
 
 # Windows Build Static
@@ -27,13 +24,18 @@ endif()
 option(STATIC_BUILD "Build a static binary." ${BUILD_FOR_WIN})
 if (STATIC_BUILD)
         set(CMAKE_EXE_LINKER_FLAGS "-static")
-        set(CMAKE_FIND_LIBRARY_SUFFIXES ".a" CONFIG)
+        set(CMAKE_FIND_LIBRARY_SUFFIXrS ".a" CONFIG)
         set(BUILD_SHARED_LIBS OFF)
 endif()
 
 
 
 add_executable(bfi++ ${CMAKE_SOURCE_DIR}/main.cpp)
+
+# Windows Stuff
+if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	target_link_libraries(bfi++ PRIVATE "-lstdc++exp")
+endif()
 
 target_precompile_headers(bfi++ PRIVATE <filesystem> <fstream> <getopt.h>
 	<iostream> <limits> <print> <stack> <string> <vector> <cctype>)

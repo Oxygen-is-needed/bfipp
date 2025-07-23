@@ -15,25 +15,35 @@ const int __frontend_config_len = COUNT(FRONTEND_CONFIG);
 #undef  X
 
 namespace Utils {
-  // TODO: add comments
-  void print_help(const int &opt, const std::string_view &flag,
-      const std::string_view &msg, bool flags=true){
+  /**
+   * print_help() - A Utility function to display a help entry.
+   * @single: A single-character flag.
+   * @flag:   A long-form flag.
+   * @msg:    A description for the single and long flag combination.
+   * @flags:  Indicates whether flag indicators (e.g., '-', '--') should be
+   * displayed.
+   *
+   * context: If the flag is empty, it will be disregarded, and the single flag
+   *  will be printed closer to the center of the space they both would have
+   *  occupied.
+   *
+   * A utility function designed to print a portion of a help entry, ensuring
+   * consistency in help outputs.
+   */
+  void print_help(const int &single, const std::string_view &flag,
+                  const std::string_view &msg, bool flags = true) {
 
-    std::string_view f[2] = {
-      "-",
-      "--"
-    };
+    std::string_view f[2] = {"-", "--"};
     std::string_view n[2] = {"", ""};
-    std::string_view (&pre)[2] = (flags == true) ? f : n ;
+    std::string_view(&pre)[2] = (flags == true) ? f : n;
 
     if (!flag.empty()) {
-      std::println("\t{:1}{} | {:2}{:14}- {}",
-          pre[0], (char)opt, pre[1], flag, msg);
+      std::println("\t{:1}{} | {:2}{:14}- {}", pre[0], (char)single, pre[1], flag,
+                   msg);
       return;
     }
 
-    std::println("\t      {:1}{}{:13}- {}",
-        pre[0], (char)opt, ' ' , msg);
+    std::println("\t      {:1}{}{:13}- {}", pre[0], (char)single, ' ', msg);
   }
 }
 

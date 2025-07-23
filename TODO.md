@@ -60,7 +60,7 @@
     - [x] Remove debug macros
     - [x] Signal Catching
 
-- [ ] General
+- [x] General
     - [x] Add/Fix Logging
         - [x] with verbose logging levels as well
         - [x] loging method prefix
@@ -84,43 +84,39 @@
             - [x] list each
     - [x] Investigate mannor to load module for frontend/backend cross platform
         - will have to implement for each <https://blog.theopnv.com/posts/cpp-dynamic-loading/>
-    - [ ] Add Backend Output Methods
-        - [ ] Have frontend accept VM instead of backend?
-        - [ ] Backend output whats neccessary for VM? - vm.export()
-        - [ ] Reduce/Remove excess code for multiple `Exec_funcs`
+    - [x] Add Backend Output Methods
+        - [x] Have frontend accept VM instead of backend
+        - [x] Backend output whats neccessary for VM - vm.export()
 
 - [x] Move configuration macros to `config.hpp`
 
 - [x] Use Cmake instead of make
 
-- [ ] Documentation
-    - [ ] Improve README
+- [x] Documentation
+    - [x] Improve README
         - [x] show default rules
         - [x] UPDATE: document how to add frontend
-        - [ ] document how to add backend
-    - [ ] `-H` | `--help-long` for longer help text.
+    - [x] `-H` | `--help-long` for longer help text.
         - [x] Normal Help
         - [x] Frontend Help
         - [x] Descriptions
-        - [ ] Note at bottom to route into less (or windows equivilant)
-    - [ ] Examples
-        - [ ] How to use frontends
-        - [ ] How to use Windows | Linux
+    - [x] Examples
+        - [x] How to use frontends
 
 
-- [ ] Wrap Up
+- [x] Wrap Up
     - [x] Clean up code
     - [x] Update README.md
-    - [ ] Update how to use program (eg `--help` output)
-    - [ ] Detect Unused Code
-    - [ ] Look at TODO's
-    - [ ] Update Version Number
+    - [x] Update how to use program (eg `--help` output)
+    - [x] Detect Unused Code
+    - [x] Look at TODO's
+    - [x] Update Version Number
 
-- [ ] Package and Release
+- [x] Package and Release
     - [x] use cmake to create relaese in multiple formats
         - [x] Windows
         - [x] Linux
-    - [ ] add: github Releases
+    - [x] add: github Releases
 
 
 
@@ -151,6 +147,8 @@
 - Frontend
     - Heat map for which tokens are access the most.
     - Simple Text
+        - Stop at get input (or wait till instruction type)
+        - Clear output buffer
         - Add base number at end of numbers, to know index of each. (e.g. '1''2''3''4' 10 = 11, 12, 13, 14)
         - Run till spicific amount of steps.
         - Input buffer?
