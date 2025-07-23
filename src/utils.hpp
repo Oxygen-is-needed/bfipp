@@ -14,6 +14,28 @@ const int __frontend_config_len = COUNT(FRONTEND_CONFIG);
 #undef  COUNT
 #undef  X
 
+namespace Utils {
+  void print_help(const int &opt, const std::string_view &flag,
+      const std::string_view &msg, bool flags=true){
+
+    std::string_view f[2] = {
+      "-",
+      "--"
+    };
+    std::string_view n[2] = {"", ""};
+    std::string_view (&pre)[2] = (flags == true) ? f : n ;
+
+    if (!flag.empty()) {
+      std::println("\t{:1}{} | {:2}{:14}- {}",
+          pre[0], (char)opt, pre[1], flag, msg);
+      return;
+    }
+
+    std::println("\t      {:1}{}{:13}- {}",
+        pre[0], (char)opt, ' ' , msg);
+  }
+}
+
 // Colors {{{
 namespace C {
 #define M_RESET		  0

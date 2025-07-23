@@ -3,11 +3,15 @@
 
 // TODO: comment all setting options here
 
-#define FRONTEND_CONFIG                                                        \
-  X(NONE, None::frontend)                                                      \
-  X(TERM_SIMPLE, SimpleTextFrontend::frontend)
+#define NT "\t\t\t\t"
+#define NL "\n" NT
 
-#define NL "\n\t\t\t"
+#define FRONTEND_CONFIG                                                        \
+  X(NONE, None::frontend, nullptr)                                             \
+  X(TERM_SIMPLE, SimpleTextFrontend::frontend, SimpleTextFrontend::help)
+
+#define BACKEND_CONFIG
+
 #define PROGRAM_FLAGS                                                          \
   X('f', ':', ' ', "file", required_argument, "file: Input file.")             \
   X('h', ' ', ' ', "help", no_argument, "Prints helps text.")                  \
@@ -24,6 +28,8 @@
     "Use no arguments to list frontends.")                                     \
   X('l', ' ', ' ', "list-fronts", no_argument, "List all available frontends.")
 
+#define FRONTEND_DESCRIPTION__SIMPLE_TEXT \
+  "Simple Text Frontend. A frontend using a terminal."
 #define FRONTEND_KEYS__SIMPLE_TEXT                                             \
   X(QUIT, 'q', "Quit Frontend.")                                               \
   X(HELP, 'h', "Prints help text.")                                            \

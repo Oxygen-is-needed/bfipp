@@ -1,3 +1,5 @@
 bfi++
 pkg*
 examples*
+build*
+.cache*

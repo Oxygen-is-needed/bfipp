@@ -35,22 +35,32 @@ namespace Args {
     };
 
     namespace {
-      void exec_help_helper(const int &opt, const std::string_view &flag,
-          const std::string_view &msg){
-        std::cout << "\t" << "-" << (char)opt << " | --" << flag << "\t - " << msg
-          << std::endl;
-        return;
+    }
+
+
+    void frontend_help() {
+      void (*const funcs[])() = {
+#define X(A,B,C,...)  C,
+          FRONTEND_CONFIG
+#undef  X
+      };
+
+      for (int x=0; x<FRONTEND_LENGTH; x++) {
+        if (funcs[x] == nullptr)
+          continue;
+        funcs[x]();
       }
     }
 
     void exec_help() {
-#define X(A, F, G, B, C, E) exec_help_helper(A, B, E);
+#define X(A, F, G, B, C, E) Utils::print_help(A, B, E);
       KEYS
 #undef  X
     }
 
 #undef KEYS
   }
+
 
   void print_version() {
     std::cout << "bfi++ " << VERSION << " (" << __DATE__ << ", "
@@ -118,10 +128,13 @@ namespace Args {
     while ((opt = getopt_long(argc, argv, opts, longopts, nullptr)) != -1) {
       switch (opt) {
         // RUN AND KILL
+        case 'H':
+          exec_help();
+          frontend_help();
+          exit(0);
         case 'h':
           exec_help();
           exit(0);
-          break;
         case 'v':
           exit(0);
           break;

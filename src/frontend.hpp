@@ -35,15 +35,13 @@ namespace SimpleTextFrontend {
 #undef X
   };
 
-  void help_text(int& help) {
-    if (help > 0) {
-      std::cout << std::endl;
-#define X(A,B,C)  std::cout << "\t|" << B << "| - " << C << std::endl;
+  void help() {
+      std::cout << "\n" FRONTEND_DESCRIPTION__SIMPLE_TEXT "\n";
+#define X(A,B,C)  Utils::print_help(B, "", C, false);
       KEYS
 #undef X
-        help--;
-    }
   }
+
 
   unsigned int get_int() {
     std::string input;
@@ -51,13 +49,13 @@ namespace SimpleTextFrontend {
     return static_cast<unsigned int>
       (std::stoul(input));
   }
-  void keybindings(char &key, bool &ret, bool &ug, int &help,
+  void keybindings(char &key, bool &ret, bool &ug, int &phelp,
       unsigned int &skip, unsigned int &wait) {
     switch(key) {
       case QUIT:
         ret = false; return;
       case HELP:
-        help = 2; return;
+        phelp = 2; return;
 
       case RUN:
         ug = false; return;
@@ -125,7 +123,7 @@ namespace SimpleTextFrontend {
     inspect_instructions(backend, got_vm.ins_max, got_vm.ins_i);
     bool user_guided = true;
     bool ret = true;
-    int help = false;
+    int phelp = false;
     unsigned int skip_i = 0;
     unsigned int skip = 0;
     unsigned int wait = 0;
@@ -138,7 +136,7 @@ namespace SimpleTextFrontend {
         char in = getchar();
         std::string input;
 
-        keybindings(in, ret, user_guided, help, skip, wait);
+        keybindings(in, ret, user_guided, phelp, skip, wait);
         if (ret == false)
           continue;
 
@@ -148,7 +146,10 @@ namespace SimpleTextFrontend {
         inspect_instructions(backend, got_vm.ins_max, got_vm.ins_i);
         std::cout << "\nOutput: " << got_vm.output;
 
-        help_text(help);
+        if (phelp > 0) {
+          help();
+          phelp--;
+        }
 
         std::cout << std::endl;
 
@@ -178,7 +179,7 @@ namespace Frontend {
 
 
   enum Frontend_Index {
-#define X(A,B)  A,
+#define X(A,B,...)  A,
     CONF
 #undef  X
   };
@@ -188,7 +189,7 @@ namespace Frontend {
     void (*const func)(Backend&);
   };
   struct Functions functions[] = {
-#define X(A,B)  { .name = STR(A) , .func = B },
+#define X(A,B,...)  { .name = STR(A) , .func = B },
     CONFIG
 #undef  X
   };

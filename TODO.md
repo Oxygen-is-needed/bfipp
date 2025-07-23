@@ -60,7 +60,7 @@
     - [x] Remove debug macros
     - [x] Signal Catching
 
-- [x] General
+- [ ] General
     - [x] Add/Fix Logging
         - [x] with verbose logging levels as well
         - [x] loging method prefix
@@ -75,24 +75,35 @@
             - [x] what happens at end of tape
         - [x] Pass to VM as constructor
     - [x] Create VM destructor
-    - [x] Easier way to add front/backend
+    - [ ] Easier way to add front
         - [x] add choose frontend
             - [x] number
             - [x] name
-        - [x] list frontends
+        - [ ] list frontends
+            - [ ] add description of each
+            - [ ] add description of frontends
+            - [ ] list each
+    - [ ] `config.hpp` change backend
     - [x] Investigate mannor to load module for frontend/backend cross platform
         - will have to implement for each <https://blog.theopnv.com/posts/cpp-dynamic-loading/>
 
 - [x] Move configuration macros to `config.hpp`
 
-- [ ] Use Cmake instead of make
+- [x] Use Cmake instead of make
 
 - [ ] Documentation
     - [ ] Improve README
         - [x] show default rules
-        - [x] document how to add frontend
+        - [ ] UPDATE: document how to add frontend
         - [ ] document how to add backend
     - [ ] `-H` | `--help-long` for longer help text.
+        - [x] Normal Help
+        - [x] Frontend Help
+        - [ ] Descriptions
+        - [ ] Note at bottom to route into less (or windows equivilant)
+    - [ ] Examples
+        - [ ] How to use frontends
+        - [ ] How to use Windows | Linux
 
 - [ ] Package and Release
     - [ ] use cmake to create relaese in multiple formats
@@ -103,6 +114,7 @@
 - [ ] Wrap Up
     - [x] Clean up code
     - [x] Update README.md
+    - [ ] Update how to use program (eg `--help` output)
     - [ ] Detect Unused Code
     - [ ] Look at TODO's
     - [ ] Update Version Number
