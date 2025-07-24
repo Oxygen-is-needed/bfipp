@@ -120,6 +120,38 @@
 
 
 
+# v1.2.0
+
+- [ ] Main
+    - [ ] If run in graphical mode, open terminal.
+
+- [ ] Output
+    - [ ] `-o` | `--output` argument specify output file.
+    - [ ] `-O` | `--only-output` argument specify output file, no run.
+    - [ ] Set frontend as NONE auto
+    - [ ] Output raw code
+
+- [ ] Input
+    - [ ] See `#!` and ignore that line
+
+- [ ] Frontend
+    - [ ] Removable with macro
+    - [ ] Simple Text
+        - [ ] Wait till instruction type
+        - [ ] Clear output buffer
+        - [ ] Add base number to instruction index
+    - [ ] Simple Graphical Frontend (raylib)
+
+
+- [ ] Wrap Up
+    - [ ] Update README.md
+    - [ ] Update Program Usage
+    - [ ] Detect Unused Code
+    - [ ] Look at TODO's
+    - [ ] Update Version Number
+    - [ ] Package and Release
+
+
 # Ideas
 
 - ALL
@@ -147,9 +179,6 @@
 - Frontend
     - Heat map for which tokens are access the most.
     - Simple Text
-        - Stop at get input (or wait till instruction type)
-        - Clear output buffer
-        - Add base number at end of numbers, to know index of each. (e.g. '1''2''3''4' 10 = 11, 12, 13, 14)
         - Run till spicific amount of steps.
         - Input buffer?
         - Wait till break out of loop.
