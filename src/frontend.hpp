@@ -206,22 +206,22 @@ namespace SimpleTextFrontend {
 // Frontend {{{
 namespace Frontend {
 #define CONFIG  FRONTEND_CONFIG
-#define CONF  \
-  CONFIG  \
+#define CONF                                                                   \
+  CONFIG                                                                       \
   X(_LEN, nullptr)
-
 
   enum Frontend_Index {
 #define X(A,B,...)  A,
     CONF
 #undef  X
+    __NONE__
   };
 
   struct Functions {
     const std::string_view name;
     void (*const func)(VM&);
   };
-  struct Functions functions[] = {
+  const struct Functions functions[] = {
 #define X(A,B,...)  { .name = STR(A) , .func = B },
     CONFIG
 #undef  X

@@ -64,8 +64,11 @@
     "List all available frontends.")                                           \
   X('F', ':', ' ', "frontend", optional_argument,                              \
     "Change the frontend used to render." NL                                   \
-    "Use no arguments to list frontends.")
-
+    "Use no arguments to list frontends.")                                     \
+  X('o', ':', ':', "output", required_argument,                                \
+    "Output code as file. Will run frontend.")                                 \
+  X('O', ':', ':', "only-output", required_argument,                           \
+    "Only output code as file. Will not run frontend.")
 
 /**
  * define FRONTEND_DESCRIPTION - Description for what frontends are.
@@ -117,6 +120,12 @@
   X(SKIP, 's', "num: Skip a defined amount each step.")                        \
   X(WAIT, 'w', "num: Wait till defined instruction counter.")
 
+
+// TODO: add comment
+#define OUTPUT_CONFIG \
+  X(RAW, RawOut::output, "Export a raw code executable.")
+
+
 /**
  * define PRINT_LOG_METHODS - Names and Colors used for Logging each method.
  *
@@ -133,6 +142,7 @@
   X(VM,       M_BLUE)                                                          \
   X(BACKEND,  M_MAGENTA)                                                       \
   X(FRONTEND, M_GREEN)                                                         \
+  X(OUTPUT,   M_GREEN)                                                         \
   X(SETTINGS, M_YELLOW)
 
 

@@ -43,7 +43,7 @@
     - [x] Look at TODO's
     - [x] Update Version Number
 
-# v1.1.0
+# v1.1.0 - Fixes and Improvements
 
 - [x] Fix
     - [x] Fix critics
@@ -120,19 +120,21 @@
 
 
 
-# v1.2.0
+# v1.2.0 - Outputs and Graphics
 
 - [ ] Main
     - [ ] If run in graphical mode, open terminal.
 
-- [ ] Output
-    - [ ] `-o` | `--output` argument specify output file.
-    - [ ] `-O` | `--only-output` argument specify output file, no run.
-    - [ ] Set frontend as NONE auto
-    - [ ] Output raw code
+- [x] Output
+    - [x] `-o` | `--output` argument specify output file.
+    - [x] `-O` | `--only-output` argument specify output file, no run.
+    - [x] Set frontend as NONE auto
+    - [x] Output raw code
+    - [x] Set file as executable
+    - [x] Set frontend to be same as the one used at execution
 
-- [ ] Input
-    - [ ] See `#!` and ignore that line
+- [x] Input
+    - [x] See `#!` and ignore that line
 
 - [ ] Frontend
     - [ ] Removable with macro
@@ -141,6 +143,9 @@
         - [ ] Clear output buffer
         - [ ] Add base number to instruction index
     - [ ] Simple Graphical Frontend (raylib)
+
+- [ ] Document
+    - [ ] Add frontend function format (eg what input variable)
 
 
 - [ ] Wrap Up

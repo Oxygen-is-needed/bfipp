@@ -31,6 +31,7 @@ endif()
 
 
 add_executable(bfi++ ${CMAKE_SOURCE_DIR}/main.cpp)
+install(TARGETS bfi++ DESTINATION bin)
 
 # Windows Stuff
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")

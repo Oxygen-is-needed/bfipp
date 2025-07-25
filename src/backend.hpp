@@ -198,7 +198,7 @@ class VM {
 /* Backend {{{ */
 class Backend {
   private:
-#define STATE(s)  check_state(s, STR(__FUNCTION__))
+#define STATE(S)  { check_state(S, __PRETTY_FUNCTION__); }
 
   Log::O error = {
     .v  = 0,
@@ -215,13 +215,16 @@ class Backend {
   } state=SET;
 
   void check_state(enum State s, std::string_view func) {
-    Log::print(error, "Use of function '", __FUNCTION__, "' in invalid state.");
+    if (state == s)
+      return;
+    Log::print(error, "Use of function '", func, "' in invalid state.");
     exit(1);
   }
 
   /* SET {{{ */
   private:
   VM::Rules rules;
+
   public:
   Backend () {
     STATE(SET);
@@ -322,8 +325,13 @@ class Backend {
 
     // Sanitize and Append code
     std::string line;
-    while (std::getline(fd, line) && state == GET) {
-      code += sanitize_input(line);
+    if (std::getline(fd, line) && state == GET) {
+      if (!(line[0] != '#' && line[1] == '!'))
+        code += sanitize_input(line);
+
+      while (std::getline(fd, line) && state == GET) {
+        code += sanitize_input(line);
+      }
     }
 
     fd.close();
@@ -368,6 +376,7 @@ class Backend {
 
   /* EXE {{{ */
   struct VM::Import export_vm(void) {
+    STATE(EXE);
     return {.r = rules, .i = instructions, .c = code};
   }
   /* }}} */

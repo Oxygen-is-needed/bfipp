@@ -16,6 +16,7 @@
 
 #include "backend.hpp"
 #include "frontend.hpp"
+#include "output.hpp"
 
 // Args {{{
 namespace Args {
@@ -73,6 +74,8 @@ namespace Args {
   };
   enum Get_Status gstat=NONE;
   enum Frontend::Frontend_Index frontend = Frontend::SIMPLE_TEXT;
+  enum Output::Method output = Output::__NONE__;
+  std::filesystem::path output_file = "";
   std::string text = "";
 
   Log::O verbose = {
@@ -199,12 +202,58 @@ namespace Args {
           exit(0);
           break;
 
+          // OUTPUT
+        case 'O':
+          frontend = Frontend::__NONE__;
+
+          [[fallthrough]];
+        case 'o':
+          if (optarg == nullptr) {
+            Log::print(error, "Unable to find output file");
+            exit(1);
+          }
+
+          // TODO: check if already changed
+          output = Output::RAW;
+          output_file = optarg;
+          break;
+
           // OTHER
         case 'V':
           Log::verbose_level = Log::verbose_max;
           Log::print(verbose, "Enabled Verbose");
           break;
+        case '?':
+          exit(1);
       }
+    }
+  }
+
+  void get_input(Backend& bf) {
+    switch(Args::gstat) {
+      case Args::NONE:
+        Log::print(Log::error(),"No code input specified.");
+        Args::exec_help();
+        exit(1);
+      case Args::FILE:
+        if (Args::use_text() == false)
+          exit(1);
+        if (!std::filesystem::exists(Args::text)) {
+          Log::print(Log::error(), "File does not exist.");
+          exit(1);
+        }
+        Log::print(Args::verbose, "Getting data from file");
+        bf.get_file(Args::text);
+        break;
+      case Args::TEXT:
+        if (Args::use_text() == false)
+          exit(1);
+        Log::print(Args::verbose, "Getting data from input");
+        bf.get(Args::text);
+        break;
+      case Args::HELLO:
+        bf.get();
+        break;
     }
   }
 }
@@ -220,38 +269,21 @@ int main(int argc, char* argv[]) {
     bf.print_rules();
   }
 
-  // Get input /* Ignoring non program charactors */
-  switch(Args::gstat) {
-    case Args::NONE:
-      Log::print(Log::error(),"No code input specified.");
-      Args::exec_help();
-      return 0;
+  // Get input
+  Args::get_input(bf);
 
-    case Args::FILE:
-      if (Args::use_text() == false) return 0;
-      if (!std::filesystem::exists(Args::text)) {
-        Log::print(Log::error(), "File does not exist.");
-        return 0;
-      }
-      Log::print(Args::verbose, "Getting data from file");
-      bf.get_file(Args::text);
-      break;
-    case Args::TEXT:
-      if (Args::use_text() == false) return 0;
-
-      Log::print(Args::verbose, "Getting data from input");
-      bf.get(Args::text);
-      break;
-    case Args::HELLO:
-      bf.get();
-      break;
-  }
-
-  // Convert to IR
+  // Convert
   Log::print({.v=1,.lm=Log::BACKEND},"Converting to IR representation");
   bf.convert();
 
-  // Execute (Option for stepping through)
+  // Execute
+  if (!Args::output_file.empty())
+    Output::output(bf, Args::frontend, Args::output_file,
+                   Args::output);
+
+  // Frontend
+  if (Args::frontend == Frontend::__NONE__)
+    return 0;
   Log::print({.v=1,.lm=Log::FRONTEND}, "Running frontend");
   Frontend::frontend(bf, Args::frontend);
 }
