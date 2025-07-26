@@ -74,6 +74,7 @@ namespace Args {
   };
   enum Get_Status gstat=NONE;
   enum Frontend::Frontend_Index frontend = Frontend::SIMPLE_TEXT;
+  bool frontend_run = true;
   enum Output::Method output = Output::__NONE__;
   std::filesystem::path output_file = "";
   std::string text = "";
@@ -107,6 +108,8 @@ namespace Args {
 
     std::cout << FRONTEND_DESCRIPTION "\n";
     for (int x=0; x<FRONTEND_LENGTH; x++) {
+      if (Frontend::functions[x].func == nullptr)
+        continue;
       if (!description[x].empty()) {
         std::println("\t{:2}| {:16} - {}", x+1, Frontend::functions[x].name, description[x]);
         continue;
@@ -116,12 +119,20 @@ namespace Args {
     }
   }
 
+  bool check_frontend(int num) {
+    if (Frontend::functions[num].func == nullptr) {
+      return false;
+    }
+
+    frontend = static_cast<Frontend::Frontend_Index>(num);
+    return true;
+  }
+
   bool choose_frontend(std::string method) {
     try {
       int num = std::stoi(method);
       if (num > 0 && num <= FRONTEND_LENGTH) {
-        frontend = static_cast<Frontend::Frontend_Index>(num-1);
-        return true;
+        return check_frontend(num-1);
       }
     } catch (std::invalid_argument& e) {
     }
@@ -130,8 +141,7 @@ namespace Args {
 
     for (int x=0; x<FRONTEND_LENGTH; x++) {
       if (Frontend::functions[x].name == method) {
-        frontend = static_cast<Frontend::Frontend_Index>(x);
-        return true;
+        return check_frontend(x);
       }
     }
 
@@ -204,7 +214,7 @@ namespace Args {
 
           // OUTPUT
         case 'O':
-          frontend = Frontend::__NONE__;
+          frontend_run = false;
 
           [[fallthrough]];
         case 'o':
@@ -278,11 +288,10 @@ int main(int argc, char* argv[]) {
 
   // Execute
   if (!Args::output_file.empty())
-    Output::output(bf, Args::frontend, Args::output_file,
-                   Args::output);
+    Output::output(bf, Args::frontend, Args::output_file, Args::output);
 
   // Frontend
-  if (Args::frontend == Frontend::__NONE__)
+  if (Args::frontend_run == false)
     return 0;
   Log::print({.v=1,.lm=Log::FRONTEND}, "Running frontend");
   Frontend::frontend(bf, Args::frontend);

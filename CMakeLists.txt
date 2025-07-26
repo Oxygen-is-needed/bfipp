@@ -15,6 +15,11 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/pkg)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/pkg)
 
 
+# Frontends Disable Options
+option(DISABLE_SIMPLE_TEXT "Disable Simple Text Frontend" OFF)
+
+
+
 # Windows Build Static
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         set(BUILD_FOR_WIN TRUE)
@@ -36,6 +41,12 @@ install(TARGETS bfi++ DESTINATION bin)
 # Windows Stuff
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	target_link_libraries(bfi++ PRIVATE "-lstdc++exp")
+endif()
+
+# Disable Frontends Macros
+if (DISABLE_SIMPLE_TEXT)
+	target_compile_definitions(bfi++ PRIVATE
+		"-DDISABLE_FRONTEND__SIMPLE_TEXT")
 endif()
 
 target_precompile_headers(bfi++ PRIVATE <filesystem> <fstream> <getopt.h>

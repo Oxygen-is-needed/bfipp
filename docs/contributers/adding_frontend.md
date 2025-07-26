@@ -2,18 +2,17 @@
 
 ## Steps
 
-1. Develop a new function(s) that takes the Backend class as an argument.
+1. Develop a new function(s) that takes the VM class reference as an argument.
 2. Include the functions in the macro named `FRONTEND_CONFIG` in `config.hpp`.
-3. That's it!
+3. Include disable option in `CMakeLists.txt`.
 
 The most challenging aspect will be creating a new function that accepts the
-Backend class. This is primarily because you'll need to conduct extensive
+VM class reference. This is primarily because you'll need to conduct extensive
 research to understand how to interact with this class, along with the overall
 effort involved. However, this guide aims to provide a straightforward
 introduction to the process.
 
-
-## Implementing the Backend Interface Function
+## Implementing the VM Interface Function
 
 ### Location/Naming
 
@@ -27,29 +26,45 @@ namespace. The namespace must follow Pascal case conventions and should be the
 extended version of the name that will be used when adding it to the
 `FRONTEND_CONFIG`.
 
-### Interfacing with the Backend Class
+### Implementing Frontend Disabling
 
-To interface with the `Backend` class, reviewing some examples may be
-beneficial, as the process primarily involves a simple loop, similar to a REPL
-loop.
+To remove a frontend during compilation, simple macros are utilized. The naming
+convention for these macros is `DISABLE_FRONTEND__` followed by the name you
+assigned to your frontend in `config.hpp`.
+
+Once you've chosen a name, you can use the following macros within the namespace
+you created for your frontend:
+
+```cpp
+namespace YourFrontend {
+#ifndef DISABLE_FRONTEND__YOUR_FRONTEND
+
+// ... your code here
+
+#else
+    void (*const frontend)(VM& vm) = nullptr;
+    void (*const help)() = nullptr;
+#endif
+}
+```
+
+
+This code snippet sets the function pointers to `nullptr`, allowing the program
+to ignore them when checking for their existence.
+
+### Interfacing with the VM Class
+
+To effectively interface with the `VM` class, it can be helpful to review some
+examples, as the process mainly involves a straightforward loop, akin to a REPL
+loop:
 
 1. Read the user input
 2. Execute the action
 3. Advance the VM
 4. Repeat
 
-The key components necessary for connecting to the backend are found within the
-`VM` that the backend contains. To gain direct access to the `VM`, create a
-variable reference to it and call the `.get_vm()` function on the backend. This
-can be done as follows:
-
-```cpp
-VM& vm = backend.get_vm();
-```
-
-Once you have this reference, you can interact with the VM directly, saving time
-compared to navigating through the Backend. To connect with the `VM` class,
-there are several important variables to consider:
+When connecting with the `VM` class, there are several key variables to keep in
+mind:
 
 | Instruction| Location|
 |:-:|---|
@@ -62,6 +77,8 @@ there are several important variables to consider:
 | Total steps| `.total_steps`|
 | Buffer index| `.pc`|
 
+Additionally, here are the `VM` rules to consider:
+
 | VM Rules| Location| Description|
 |:-:|:-:|---|
 | Tape length| `.rules.tape_length` (unsigned int) | Length of the VM buffer|
@@ -70,9 +87,8 @@ there are several important variables to consider:
 | Rule commands| `.rules.r[].cmd` (char)| Character interpreted as an action|
 | Rule binary| `.rules.r[].findex` (std::vector<unsigned char>) | Function array index list for command actions |
 
-You can utilize these values, derived from the `VM` class to get pretty much all
-neccessary information for creating a frontend.
-
+You can leverage these values from the `VM` class to obtain nearly all the
+necessary information for creating a frontend.
 
 ### Creating a help function (Optional)
 
@@ -90,7 +106,6 @@ function. This can be implemented as follows:
     FRONTEND_KEYS_YOUR_FRONT
 #undef  X
 ```
-
 
 ## Adding to `FRONTEND_CONFIG`
 
@@ -115,4 +130,53 @@ minimum:
 #define FRONTEND_CONFIG \
   X(NONE, None::frontend, nullptr, "") \
   X(YOUR_FRONT, YourFront::frontend, YourFront::help, "Your frontend description")
+```
+
+## Updating `CMakeLists.txt`
+
+Once everything is set up, you'll need to modify the `CMakeLists.txt` file to
+enable CMake to disable your frontend. There are two specific sections in this
+file where you'll need to make additions:
+
+1. Under the `Frontends Disable Options` comment
+2. Under the `Disable Frontends Macros` comment
+
+### Step One
+
+This part is straightforward. You'll create an option name by prefixing
+`DISABLE_` with the name of your function from `config.hpp`, converting it to
+uppercase and separating words with underscores. It should look like this:
+
+```cmake
+option(DISABLE_YOUR_FRONTEND "Disable Your Frontend" OFF)
+```
+
+Place this option in the same location as it appears in `config.hpp`. By
+default, you want your frontend to be included, so **OFF** is the default
+selection. If you prefer it to be disabled by default, change **OFF** to **ON**.
+
+### Step Two
+
+In this section, you'll create an *if* statement using the name you defined in
+the previous step. Then, add the necessary macro to disable your frontend, which
+was created during the frontend setup. It should resemble the following:
+
+```cmake
+if (DISABLE_YOUR_FRONTEND)
+    target_compile_definitions(bfi++ PRIVATE
+        "-DDISABLE_FRONTEND__YOUR_FRONTEND")
+endif()
+```
+
+If you have headers that are not used elsewhere, you can ensure they are
+included when your option is not declared, or include any other options your
+frontend requires. It should look something like this:
+
+```cmake
+if (DISABLE_YOUR_FRONTEND)
+    target_compile_definitions(bfi++ PRIVATE
+        "-DDISABLE_FRONTEND__YOUR_FRONTEND")
+else()
+    # ... your options
+endif()
 ```

@@ -326,12 +326,13 @@ class Backend {
     // Sanitize and Append code
     std::string line;
     if (std::getline(fd, line) && state == GET) {
-      if (!(line[0] != '#' && line[1] == '!'))
+      if (!(line[0] == '#' && line[1] == '!'))
         code += sanitize_input(line);
 
       while (std::getline(fd, line) && state == GET) {
         code += sanitize_input(line);
       }
+      std::cerr << code << std::endl;
     }
 
     fd.close();

@@ -63,6 +63,7 @@ namespace None {
 // }}}
 // SimpleTextFrontend {{{
 namespace SimpleTextFrontend {
+#ifndef DISABLE_FRONTEND__SIMPLE_TEXT
 #define KEYS  FRONTEND_KEYS__SIMPLE_TEXT
 
   enum Keybinds {
@@ -85,8 +86,8 @@ namespace SimpleTextFrontend {
     return static_cast<unsigned int>
       (std::stoul(input));
   }
-  void keybindings(char &key, bool &ret, bool &ug, int &phelp,
-      unsigned int &skip, unsigned int &wait) {
+  void keybindings(VM& vm, char &key, bool &ret, bool &ug, int &phelp,
+      unsigned int &skip, unsigned int &wait, char& wi) {
     switch(key) {
       case QUIT:
         ret = false; return;
@@ -101,15 +102,21 @@ namespace SimpleTextFrontend {
       case WAIT:
         wait = get_int();
         return;
+      case INSTRUCTION:
+        wi = getchar();
+        return;
+      case CLEAR:
+        vm.output.clear();
+        return;
     }
   }
 
   void inspect_instructions(VM& vm) {
+    const unsigned int sub = 4;
     unsigned int cap = vm.ins_max;
+    unsigned int frame_len = 9;
     unsigned int len = cap;
     unsigned int pc = vm.ins_i;
-    unsigned int frame_len = 9;
-    unsigned int sub = 4;
     unsigned int start;
 
     if (len < frame_len)
@@ -141,9 +148,9 @@ namespace SimpleTextFrontend {
     }
     std::cout << "\n   ";
     for (unsigned int x=start; x<end; x++) {
-      std::cout << "`" << x%9+1 << "`";
+      std::cout << "`" << x%10 << "`";
     }
-    std::cout << std::endl;
+    std::cout << " +" << (pc/10)*10 << std::endl;
   }
 
   std::string out = "";
@@ -158,22 +165,28 @@ namespace SimpleTextFrontend {
 
     Frontend_Utils::inspect_buffer(vm);
     inspect_instructions(vm);
-    bool user_guided = true;
+
     bool ret = true;
+    bool user_guided = true;
+    char wait_instruction = 0;
     int phelp = false;
-    unsigned int skip_i = 0;
     unsigned int skip = 0;
+    unsigned int skip_i = 0;
     unsigned int wait = 0;
+
     C::hide_cursor();
     Unwind::add_unwind({unwind, "SimpleTextFrontend::unwind"});
     while(ret != false) {
-      if (user_guided == true && skip_i++ >= skip
-          && (wait == 0 || wait < vm.ins_i)) {
+      if (user_guided == true && skip_i++ >= skip &&
+          (wait == 0 || wait < vm.ins_i) &&
+          (wait_instruction == 0 ||
+           (vm.ins_i < vm.ins_max && wait_instruction == vm.code[vm.ins_i]))) {
         skip_i = 0;
+        wait_instruction = 0;
         char in = getchar();
         std::string input;
 
-        keybindings(in, ret, user_guided, phelp, skip, wait);
+        keybindings(vm, in, ret, user_guided, phelp, skip, wait, wait_instruction);
         if (ret == false)
           continue;
 
@@ -189,7 +202,6 @@ namespace SimpleTextFrontend {
         }
 
         std::cout << std::endl;
-
       }
       ret = vm.step();
     }
@@ -199,6 +211,10 @@ namespace SimpleTextFrontend {
     Unwind::pop_unwind();
   }
 
+#else
+  void (*const frontend)(VM& vm) = nullptr;
+  void (*const help)() = nullptr;
+#endif
 #undef KEYS
 }
 // }}}
@@ -214,7 +230,6 @@ namespace Frontend {
 #define X(A,B,...)  A,
     CONF
 #undef  X
-    __NONE__
   };
 
   struct Functions {

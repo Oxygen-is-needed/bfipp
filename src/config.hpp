@@ -103,7 +103,7 @@
  *  frontend.
  */
 #define FRONTEND_DESCRIPTION__SIMPLE_TEXT \
-  "Simple Text Frontend. A frontend using a terminal."
+  "Simple Text Frontend. A Simple Frontend using the Terminal."
 /**
  * define FRONTEND_KEYS__SIMPLE_TEXT - Keys for SIMPLE_TEXT frontend.
  *
@@ -113,13 +113,14 @@
  *  2) Key employed by SIMPLE_TEXT.
  *  3) Description of the keybind usage.
  */
-#define FRONTEND_KEYS__SIMPLE_TEXT                                             \
-  X(QUIT, 'q', "Quit Frontend.")                                               \
-  X(HELP, 'h', "Prints help text.")                                            \
-  X(RUN,  'r', "Run entire program without user input.")                       \
-  X(SKIP, 's', "num: Skip a defined amount each step.")                        \
-  X(WAIT, 'w', "num: Wait till defined instruction counter.")
-
+#define FRONTEND_KEYS__SIMPLE_TEXT                                                     \
+  X(QUIT,         'q', "Quit Frontend.")                                               \
+  X(HELP,         'h', "Prints help text.")                                            \
+  X(RUN,          'r', "Run entire program without user input.")                       \
+  X(SKIP,         's', "num: Skip a defined amount each step.")                        \
+  X(WAIT,         'w', "num: Wait till defined instruction counter.")                  \
+  X(INSTRUCTION,  'i', "instruciton: Wati till defined instruction charactor.")        \
+  X(CLEAR,        'c', "Clear output.")
 
 // TODO: add comment
 #define OUTPUT_CONFIG \

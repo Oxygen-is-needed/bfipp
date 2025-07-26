@@ -42,7 +42,6 @@
     - [x] Detect Unused Code
     - [x] Look at TODO's
     - [x] Update Version Number
-
 # v1.1.0 - Fixes and Improvements
 
 - [x] Fix
@@ -117,9 +116,6 @@
         - [x] Windows
         - [x] Linux
     - [x] add: github Releases
-
-
-
 # v1.2.0 - Outputs and Graphics
 
 - [ ] Main
@@ -137,15 +133,16 @@
     - [x] See `#!` and ignore that line
 
 - [ ] Frontend
-    - [ ] Removable with macro
-    - [ ] Simple Text
-        - [ ] Wait till instruction type
-        - [ ] Clear output buffer
-        - [ ] Add base number to instruction index
+    - [x] Removable with macro
+    - [x] Simple Text
+        - [x] Wait till instruction type
+        - [x] Clear output buffer
+        - [x] Add base number to instruction index
     - [ ] Simple Graphical Frontend (raylib)
 
 - [ ] Document
-    - [ ] Add frontend function format (eg what input variable)
+    - [-] Add frontend function format (eg what input variable)
+    - [ ] Add output documentation
 
 
 - [ ] Wrap Up
@@ -154,8 +151,7 @@
     - [ ] Detect Unused Code
     - [ ] Look at TODO's
     - [ ] Update Version Number
-    - [ ] Package and Release
-
+    - [ ] Package and Release `cmake -DCMAKE_BUILD_TYPE=Release`
 
 # Ideas
 

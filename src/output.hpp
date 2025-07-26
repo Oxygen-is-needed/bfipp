@@ -15,7 +15,7 @@ namespace Output {
   struct Context {
     struct VM::Import i;
     std::ofstream& fp;
-    enum Frontend::Frontend_Index fi = Frontend::__NONE__;
+    enum Frontend::Frontend_Index fi = Frontend::NONE;
     std::filesystem::path& fn;
   };
 }
@@ -31,14 +31,12 @@ namespace OutputUtils {
   }
 }
 // }}}
-
-
 // Output Methods {{{
 namespace RawOut {
   void output(Output::Context c) {
     c.fp << "#!/bin/env -S bfi++";
-    if (c.fi != Frontend::__NONE__) {
-      c.fp << " -F" << static_cast<int>(c.fi);
+    if (c.fi != Frontend::NONE) {
+      c.fp << " -F" << static_cast<int>(c.fi)+1;
     }
     c.fp << " -f\n";
 
@@ -47,7 +45,6 @@ namespace RawOut {
   }
 };
 // }}}
-
 
 // Output {{{
 namespace Output {
