@@ -1,3 +1,5 @@
+#include <cctype>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <getopt.h>
@@ -7,7 +9,6 @@
 #include <stack>
 #include <string>
 #include <vector>
-#include <cctype>
 
 #include "config.hpp"
 #include "utils.hpp"
@@ -18,32 +19,34 @@
 #include "frontend.hpp"
 #include "output.hpp"
 
+// TODO: deal with these messing with "utils.hpp" C namespace
+#include <raylib.h>
+#include <raygui.h>
+
+
 // Args {{{
 namespace Args {
+  // {Anonymous} {{{
   namespace {
 #define KEYS  PROGRAM_FLAGS
 
     struct option longopts[] = {
-#define X(A,F,G,B,C,E)  { B, C, nullptr, A },
+#define X(A, F, G, B, C, E) {STR(B), C, nullptr, A},
       KEYS
 #undef  X
     };
 
     const char opts[] = {
-#define X(A,F,G,B,C,E)  A, F, G,
-      KEYS
-#undef  X
+#define X(A, F, G, B, C, E) A, F, G,
+        KEYS
+#undef X
     };
-
-    namespace {
-    }
-
 
     void frontend_help() {
       void (*const funcs[])() = {
-#define X(A,B,C,...)  C,
+#define X(A, B, C, ...) C,
           FRONTEND_CONFIG
-#undef  X
+#undef X
       };
 
       for (int x=0; x<FRONTEND_LENGTH; x++) {
@@ -54,14 +57,31 @@ namespace Args {
     }
 
     void exec_help() {
-#define X(A, F, G, B, C, E) Utils::print_help(A, B, E);
+#define X(A, F, G, B, C, E) Utils::print_help(A, STR(B), E);
       KEYS
 #undef  X
     }
 
+    namespace Keys {
+      enum {
+#define X(A, F, G, B, ...)  B,
+        KEYS
+#undef  X
+      };
+      int enumerate_key(int key) {
+
+        switch(key) {
+#define X(A, F, G, B, ...)  case A: return Keys::B ;
+          KEYS
+#undef  X
+          default: return -1;
+        }
+      }
+    }
+
 #undef KEYS
   }
-
+  // }}}
 
   void print_version() {
     std::cout << "bfi++ " << VERSION << " (" << __DATE__ << ", "
@@ -72,9 +92,11 @@ namespace Args {
   enum Get_Status {
     NONE, FILE, TEXT, HELLO
   };
-  enum Get_Status gstat=NONE;
-  enum Frontend::Frontend_Index frontend = Frontend::SIMPLE_TEXT;
+
   bool frontend_run = true;
+  bool graphical = false;
+  enum Frontend::Frontend_Index frontend = Frontend::SIMPLE_TEXT;
+  enum Get_Status gstat=NONE;
   enum Output::Method output = Output::__NONE__;
   std::filesystem::path output_file = "";
   std::string text = "";
@@ -148,130 +170,178 @@ namespace Args {
     return false;
   }
 
+  void parse(int opt) {
+    switch (opt) {
+      // RUN AND KILL
+      case Keys::lhelp:
+        exec_help();
+        frontend_help();
+        exit(0);
+      case Keys::help:
+        exec_help();
+        exit(0);
+      case Keys::version:
+        print_version();
+        exit(0);
+        break;
+
+        // INPUT
+      case Keys::file:
+        gstat = FILE;
+        if (optarg == nullptr) {
+          Log::print(error, "Optarg was set to null. No file was provided.");
+          exit(1);
+        }
+        text = optarg;
+        Log::print(verbose, "Enabled input from file");
+        break;
+      case Keys::input:
+        if (optarg == nullptr) {
+          gstat = HELLO;
+          Log::print(verbose, "Set input to Hello World default");
+          break;
+        }
+        gstat = TEXT;
+        text = optarg;
+        if (text == "-") {
+          Log::print(verbose, "Reading from stdin for input");
+          std::cin >> text;
+          break;
+        }
+        Log::print(verbose, "Set argument as input");
+        break;
+
+        // FRONTEND
+      case Keys::run:
+        frontend = Frontend::NONE;
+        Log::print(verbose, "Enabled run mode");
+        break;
+      case Keys::frontend:
+        if (optarg != nullptr) {
+          if (choose_frontend(optarg) == false) {
+            Log::print(error, "Unable to find frontend method");
+            exit(1);
+          }
+          Log::print(verbose, "Changed frontend to ",
+              Frontend::functions[frontend].name);
+          break;
+        }
+        [[fallthrough]];
+      case Keys::list_fronts:
+        list_frontends();
+        exit(0);
+        break;
+
+        // OUTPUT
+      case Keys::only_output:
+        frontend_run = false;
+
+        [[fallthrough]];
+      case Keys::output:
+        if (optarg == nullptr) {
+          Log::print(error, "Unable to find output file");
+          exit(1);
+        }
+
+        // TODO: check if already changed
+        output = Output::RAW;
+        output_file = optarg;
+        break;
+
+        // OTHER
+      case Keys::verbose:
+        Log::verbose_level = Log::verbose_max;
+        Log::print(verbose, "Enabled Verbose");
+        break;
+      case Keys::gui:
+        graphical = true;
+        break;
+      case -1:
+        Log::print(error, "Unknown Option");
+        exit(1);
+    }
+  }
+
   void arguments(int argc, char* argv[]) {
     int opt = 0;
     while ((opt = getopt_long(argc, argv, opts, longopts, nullptr)) != -1) {
-      switch (opt) {
-        // RUN AND KILL
-        case 'H':
-          exec_help();
-          frontend_help();
-          exit(0);
-        case 'h':
-          exec_help();
-          exit(0);
-        case 'v':
-          print_version();
-          exit(0);
-          break;
-
-          // INPUT
-        case 'f':
-          gstat = FILE;
-          if (optarg == nullptr) {
-            Log::print(error, "Optarg was set to null. No file was provided.");
-            exit(1);
-          }
-          text = optarg;
-          Log::print(verbose, "Enabled input from file");
-          break;
-        case 'i':
-          if (optarg == nullptr) {
-            gstat = HELLO;
-            Log::print(verbose, "Set input to Hello World default");
-            break;
-          }
-          gstat = TEXT;
-          text = optarg;
-          if (text == "-") {
-            Log::print(verbose, "Reading from stdin for input");
-            std::cin >> text;
-            break;
-          }
-          Log::print(verbose, "Set argument as input");
-          break;
-
-          // FRONTEND
-        case 'r':
-          frontend = Frontend::NONE;
-          Log::print(verbose, "Enabled run mode");
-          break;
-        case 'F':
-          if (optarg != nullptr) {
-            if (choose_frontend(optarg) == false) {
-              Log::print(error, "Unable to find frontend method");
-              exit(1);
-            }
-            Log::print(verbose, "Changed frontend to ",
-                       Frontend::functions[frontend].name);
-            break;
-          }
-          [[fallthrough]];
-        case 'l':
-          list_frontends();
-          exit(0);
-          break;
-
-          // OUTPUT
-        case 'O':
-          frontend_run = false;
-
-          [[fallthrough]];
-        case 'o':
-          if (optarg == nullptr) {
-            Log::print(error, "Unable to find output file");
-            exit(1);
-          }
-
-          // TODO: check if already changed
-          output = Output::RAW;
-          output_file = optarg;
-          break;
-
-          // OTHER
-        case 'V':
-          Log::verbose_level = Log::verbose_max;
-          Log::print(verbose, "Enabled Verbose");
-          break;
-        case '?':
-          exit(1);
-      }
+      if (opt == '?')
+        exit(1);
+      parse(Keys::enumerate_key(opt));
     }
   }
 
   void get_input(Backend& bf) {
-    switch(Args::gstat) {
-      case Args::NONE:
-        Log::print(Log::error(),"No code input specified.");
-        Args::exec_help();
+    switch(gstat) {
+      case NONE:
+        Log::print(error,"No code input specified.");
+        exec_help();
         exit(1);
-      case Args::FILE:
-        if (Args::use_text() == false)
+      case FILE:
+        if (use_text() == false)
           exit(1);
-        if (!std::filesystem::exists(Args::text)) {
+        if (!std::filesystem::exists(text)) {
           Log::print(Log::error(), "File does not exist.");
           exit(1);
         }
-        Log::print(Args::verbose, "Getting data from file");
-        bf.get_file(Args::text);
+        Log::print(verbose, "Getting data from file");
+        bf.get_file(text);
         break;
-      case Args::TEXT:
-        if (Args::use_text() == false)
+      case TEXT:
+        if (use_text() == false)
           exit(1);
-        Log::print(Args::verbose, "Getting data from input");
-        bf.get(Args::text);
+        Log::print(verbose, "Getting data from input");
+        bf.get(text);
         break;
-      case Args::HELLO:
+      case HELLO:
         bf.get();
         break;
     }
   }
 }
 // }}}
+// Graphical {{{
+namespace Graphical {
+#ifndef DISABLE_GRAPHICS
+  void menu() {
+    InitWindow(800, 600, "raygui - portable window");
+    SetWindowPosition(500, 200);
+    SetTargetFPS(60);
+
+    while (!WindowShouldClose()) {
+        BeginDrawing();
+            ClearBackground(DARKGRAY);
+#ifdef _WIN32
+            DrawText(TextFormat("Windows Binary"), 25, 40, 40, DARKGRAY);
+#else
+            DrawText(TextFormat("GNU/Linux Binary"), 25, 40, 40, WHITE);
+#endif
+            DrawText(TextFormat("This is a terminal application!"), 60, 90, 25,
+                     SKYBLUE);
+            DrawText(
+                TextFormat("You should open the documentation for running on a "
+                           "terminal.\nIts located at "
+                           "https://github.com/Oxygen-is-needed/bfipp/docs/"),
+                45, 120, 15, LIGHTGRAY);
+            EndDrawing();
+    }
+
+    CloseWindow();
+  }
+#else
+  void menu() {
+    Log::print(Args::error, "Graphical menu is Disabled");
+  }
+#endif
+}
+// }}}
 
 int main(int argc, char* argv[]) {
   Unwind::initalize_unwind();
   Args::arguments(argc, argv);
+  if (Args::graphical == true) {
+    Graphical::menu();
+  }
 
   // Set Settings
   Backend bf;

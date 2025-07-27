@@ -4,8 +4,8 @@
     - [x] VM
         - [x] Implement
         - [x] Use array for functions
-        - [x] fix: inspect_instructions() crash; read outside backend.program string.
-        - [x] fix: get_file()
+        - [x] fix: `inspect_instructions()` crash; read outside backend.program string.
+        - [x] fix: `get_file()`
         - [x] fix: interpreting bug
             - Using wrong variable to walk through instructions.
 - [x] Fontend
@@ -42,6 +42,7 @@
     - [x] Detect Unused Code
     - [x] Look at TODO's
     - [x] Update Version Number
+
 # v1.1.0 - Fixes and Improvements
 
 - [x] Fix
@@ -116,10 +117,14 @@
         - [x] Windows
         - [x] Linux
     - [x] add: github Releases
+
 # v1.2.0 - Outputs and Graphics
 
 - [ ] Main
-    - [ ] If run in graphical mode, open terminal.
+    - [x] Generalize `Args::arguments` to `Args::parse`
+    - [ ] Context Dependent `exit()` from `Args::parse`
+    - [x] `-G` | `--gui` argument to set graphical option
+    - [x] Graphical Warning <https://github.com/raysan5/raygui>?
 
 - [x] Output
     - [x] `-o` | `--output` argument specify output file.
@@ -141,7 +146,7 @@
     - [ ] Simple Graphical Frontend (raylib)
 
 - [ ] Document
-    - [-] Add frontend function format (eg what input variable)
+    - [x] Add frontend function format (eg what input variable)
     - [ ] Add output documentation
 
 

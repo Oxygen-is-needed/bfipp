@@ -38,6 +38,8 @@
  * context: if the long flag is changed you will have to change the getopt
  *  implementation names along with it.
  *
+ * context: long flag name is intentally made without quotation marks. When
+ *  using it make sure to use the `STR(X)` macro to stringify it.
  *
  * Used to configure the arguments used when executing the program.
  * There are 6 arguments to the macro X:
@@ -45,30 +47,29 @@
  *    2) single flag argument type
  *    3) single flag argument type
  *    4) long flag name.
- *      - should be without quotes
  *    5) long flag argument type
  *    6) argument description
  */
 #define PROGRAM_FLAGS                                                          \
-  X('f', ':', ' ', "file", required_argument, "file: Input file.")             \
-  X('h', ' ', ' ', "help", no_argument, "Prints helps text.")                  \
-  X('H', ' ', ' ', "lhelp", no_argument, "Prints extra helps text.")           \
-  X('i', ':', ':', "input", required_argument,                                 \
+  X('f', ':', ' ', file, required_argument, "file: Input file.")               \
+  X('h', ' ', ' ', help, no_argument, "Prints helps text.")                    \
+  X('H', ' ', ' ', lhelp, no_argument, "Prints extra helps text.")             \
+  X('i', ':', ':', input, required_argument,                                   \
     "[txt]: Input text." NL "Default with no arguments." NL                    \
     "Use '-' for reading from stdin.")                                         \
-  X('r', ' ', ' ', "run", no_argument,                                         \
+  X('r', ' ', ' ', run, no_argument,                                           \
     "Run input imediatly, using no frontend.")                                 \
-  X('V', ' ', ' ', "verbose", no_argument, "Enable verbose output.")           \
-  X('v', ' ', ' ', "version", no_argument, "Print version")                    \
-  X('l', ' ', ' ', "list-fronts", no_argument,                                 \
-    "List all available frontends.")                                           \
-  X('F', ':', ' ', "frontend", optional_argument,                              \
+  X('V', ' ', ' ', verbose, no_argument, "Enable verbose output.")             \
+  X('v', ' ', ' ', version, no_argument, "Print version")                      \
+  X('l', ' ', ' ', list_fronts, no_argument, "List all available frontends.")  \
+  X('F', ':', ':', frontend, optional_argument,                                \
     "Change the frontend used to render." NL                                   \
     "Use no arguments to list frontends.")                                     \
-  X('o', ':', ':', "output", required_argument,                                \
+  X('o', ':', ':', output, required_argument,                                  \
     "Output code as file. Will run frontend.")                                 \
-  X('O', ':', ':', "only-output", required_argument,                           \
-    "Only output code as file. Will not run frontend.")
+  X('O', ':', ':', only_output, required_argument,                             \
+    "Only output code as file. Will not run frontend.")                        \
+  X('G', ':', ':', gui, required_argument, "[Not Working] Run with GUI menu.")
 
 /**
  * define FRONTEND_DESCRIPTION - Description for what frontends are.
