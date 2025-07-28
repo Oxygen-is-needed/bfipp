@@ -125,6 +125,7 @@
     - [ ] Context Dependent `exit()` from `Args::parse`
     - [x] `-G` | `--gui` argument to set graphical option
     - [x] Graphical Warning <https://github.com/raysan5/raygui>?
+    - [ ] Manuver to allow for wrapping or adding in frontends to graphics.
 
 - [x] Output
     - [x] `-o` | `--output` argument specify output file.
@@ -143,7 +144,7 @@
         - [x] Wait till instruction type
         - [x] Clear output buffer
         - [x] Add base number to instruction index
-    - [ ] Simple Graphical Frontend (raylib)
+    - [ ] Simple Graphical Frontend
 
 - [ ] Document
     - [x] Add frontend function format (eg what input variable)

@@ -1,5 +1,8 @@
 bfi++
 pkg*
 examples*
-build*
+build/*
+-*build.sh
 .cache*
+test*
+*.o

@@ -15,13 +15,10 @@
 #include "log.hpp"
 #include "escape.hpp"
 
+#include "graphics.hpp"
 #include "backend.hpp"
 #include "frontend.hpp"
 #include "output.hpp"
-
-// TODO: deal with these messing with "utils.hpp" C namespace
-#include <raylib.h>
-#include <raygui.h>
 
 
 // Args {{{
@@ -170,7 +167,7 @@ namespace Args {
     return false;
   }
 
-  void parse(int opt) {
+  void parse(int opt, char* arg) {
     switch (opt) {
       // RUN AND KILL
       case Keys::lhelp:
@@ -188,21 +185,21 @@ namespace Args {
         // INPUT
       case Keys::file:
         gstat = FILE;
-        if (optarg == nullptr) {
+        if (arg == nullptr) {
           Log::print(error, "Optarg was set to null. No file was provided.");
           exit(1);
         }
-        text = optarg;
+        text = arg;
         Log::print(verbose, "Enabled input from file");
         break;
       case Keys::input:
-        if (optarg == nullptr) {
+        if (arg == nullptr) {
           gstat = HELLO;
           Log::print(verbose, "Set input to Hello World default");
           break;
         }
         gstat = TEXT;
-        text = optarg;
+        text = arg;
         if (text == "-") {
           Log::print(verbose, "Reading from stdin for input");
           std::cin >> text;
@@ -217,8 +214,8 @@ namespace Args {
         Log::print(verbose, "Enabled run mode");
         break;
       case Keys::frontend:
-        if (optarg != nullptr) {
-          if (choose_frontend(optarg) == false) {
+        if (arg != nullptr) {
+          if (choose_frontend(arg) == false) {
             Log::print(error, "Unable to find frontend method");
             exit(1);
           }
@@ -238,14 +235,14 @@ namespace Args {
 
         [[fallthrough]];
       case Keys::output:
-        if (optarg == nullptr) {
+        if (arg == nullptr) {
           Log::print(error, "Unable to find output file");
           exit(1);
         }
 
         // TODO: check if already changed
         output = Output::RAW;
-        output_file = optarg;
+        output_file = arg;
         break;
 
         // OTHER
@@ -267,7 +264,7 @@ namespace Args {
     while ((opt = getopt_long(argc, argv, opts, longopts, nullptr)) != -1) {
       if (opt == '?')
         exit(1);
-      parse(Keys::enumerate_key(opt));
+      parse(Keys::enumerate_key(opt), optarg);
     }
   }
 
@@ -303,30 +300,41 @@ namespace Args {
 // Graphical {{{
 namespace Graphical {
 #ifndef DISABLE_GRAPHICS
-  void menu() {
-    InitWindow(800, 600, "raygui - portable window");
-    SetWindowPosition(500, 200);
-    SetTargetFPS(60);
-
-    while (!WindowShouldClose()) {
-        BeginDrawing();
-            ClearBackground(DARKGRAY);
-#ifdef _WIN32
-            DrawText(TextFormat("Windows Binary"), 25, 40, 40, DARKGRAY);
-#else
-            DrawText(TextFormat("GNU/Linux Binary"), 25, 40, 40, WHITE);
-#endif
-            DrawText(TextFormat("This is a terminal application!"), 60, 90, 25,
-                     SKYBLUE);
-            DrawText(
-                TextFormat("You should open the documentation for running on a "
-                           "terminal.\nIts located at "
-                           "https://github.com/Oxygen-is-needed/bfipp/docs/"),
-                45, 120, 15, LIGHTGRAY);
-            EndDrawing();
+  void warningPopup(Graphics::Main_Function&) {
+    static int popup = true;
+    if (popup == true) {
+      ImGui::OpenPopup("Warning !");
+      popup = false;
     }
 
-    CloseWindow();
+    if (ImGui::BeginPopupModal("Warning !")) {
+      ImGui::Text("This is currently not a graphical application.\n");
+      ImGui::TextWrapped("This program should be used in the terminal."
+          "For the documentation for this program please visit:");
+      ImGui::TextLinkOpenURL("https://github.com/Oxygen-is-needed/bfipp", NULL);
+
+      if (Graphics::centerButton("Ok"))
+        Graphics::kill_me = true;
+
+      if (Graphics::centerButton("Load \"Hello World\""))
+        Args::parse(Args::Keys::input, nullptr);
+
+      ImGui::EndPopup();
+    }
+  }
+
+  void menu() {
+    // Setup
+    if (Graphics::setup() != true)
+      return;
+
+    // Main loop
+    Graphics::mainFuncAdd(warningPopup);
+    Graphics::Main_Loop_Status status = Graphics::END;
+    while ((status = Graphics::main()) == Graphics::CONTINUE) ;
+
+    // Cleanup
+    Graphics::End::end();
   }
 #else
   void menu() {

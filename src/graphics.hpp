@@ -1,0 +1,186 @@
+#ifndef GRAPHICS__HPP
+#define GRAPHICS__HPP
+#ifndef DISABLE_GRAPHICS
+
+
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+#define GL_SILENCE_DEPRECATION
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+#include <GLES2/gl2.h>
+#endif
+#include <GLFW/glfw3.h> // Will drag system OpenGL headers
+
+
+// Graphics {{{
+namespace Graphics {
+  GLFWwindow* window = nullptr;
+
+  struct Log::O g_error = {
+    .e = true,
+    .lm = Log::GRAPHICS
+  };
+
+  namespace End {
+    void cleanup() {
+      ImGui_ImplOpenGL3_Shutdown();
+      ImGui_ImplGlfw_Shutdown();
+      ImGui::DestroyContext();
+
+      glfwDestroyWindow(window);
+      glfwTerminate();
+    }
+
+    void end() {
+      Unwind::pop_unwind();
+      cleanup();
+    }
+    void start() {
+      Unwind::add_unwind({
+          .fptr = Graphics::End::cleanup,
+          .name = "Graphics::End::cleanup",
+          });
+    }
+  }
+
+
+  static void glfw_error_callback(int error, const char *description) {
+    Log::print(g_error, "GLFW Error ", error, ": ", description);
+  }
+
+  bool centerButton(const char *label, float alignment = 0.5f) {
+    ImGuiStyle &style = ImGui::GetStyle();
+
+    float size = ImGui::CalcTextSize(label).x + style.FramePadding.x * 2.0f;
+    float avail = ImGui::GetContentRegionAvail().x;
+
+    float off = (avail - size) * alignment;
+    if (off > 0.0f) {
+      ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off);
+    }
+
+    return ImGui::Button(label);
+  }
+
+
+  bool setup() {
+    glfwSetErrorCallback(Graphics::glfw_error_callback);
+    if (!glfwInit()) {
+      // TODO: check for error description
+      Log::print(Graphics::g_error, "Failed to initalize glfw");
+      return false;
+    }
+
+    // TODO: abstract the many versions of this somewhere else
+    const char* glsl_version = "#version 130";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+
+    // Create window with graphics context
+    float main_scale = ImGui_ImplGlfw_GetContentScaleForMonitor(
+        glfwGetPrimaryMonitor());
+    Graphics::window =
+        glfwCreateWindow((int)(1280 * main_scale), (int)(800 * main_scale),
+                         "BFI++", nullptr, nullptr);
+    if (Graphics::window == nullptr) {
+      Log::print(Graphics::g_error, "glfw failed to create Graphics::window.");
+      return false;
+    }
+    End::start();
+
+    glfwMakeContextCurrent(Graphics::window);
+    glfwSwapInterval(1);
+
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    // Disable Log and Ini Garbage
+    io.IniFilename = nullptr;
+    io.LogFilename = nullptr;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+
+    // Setup scaling
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.ScaleAllSizes(main_scale);
+    style.FontScaleDpi = main_scale;
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(Graphics::window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
+    return true;
+  }
+
+  // TODO: comments add
+  enum Main_Loop_Status {
+    CONTINUE = 0,
+    END = 1,
+  };
+  struct Main_Function {
+    bool e = false;
+    size_t index = 0;
+    void (*const fptr)(Main_Function&);
+  };
+  std::vector<Main_Function> main_functions;
+  static bool kill_me = false;
+
+  void mainFuncAdd(void (*const fptr)(Main_Function&), bool enable=true) {
+    main_functions.push_back({
+        .e = enable,
+        .index = main_functions.size(),
+        .fptr = fptr
+      });
+  }
+
+  enum Main_Loop_Status main() {
+    if (glfwWindowShouldClose(window)) {
+      kill_me = true;
+    }
+    if (kill_me == true) {
+      return END;
+    }
+
+    static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+    glfwPollEvents();
+    if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0) {
+      ImGui_ImplGlfw_Sleep(10);
+      return CONTINUE;
+    }
+
+    // Start Frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    // Run added functions
+    for (auto& f : main_functions) {
+      if (f.e == true)
+        f.fptr(f);
+    }
+
+    // Render
+    ImGui::Render();
+    int display_w, display_h;
+    glfwGetFramebufferSize(Graphics::window, &display_w, &display_h);
+    glViewport(0, 0, display_w, display_h);
+    glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w,
+                 clear_color.z * clear_color.w, clear_color.w);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    glfwSwapBuffers(Graphics::window);
+
+    return CONTINUE;
+  }
+}
+//}}}
+
+#endif
+#endif
+// vim: tabstop=2 shiftwidth=2 softtabstop=2 expandtab

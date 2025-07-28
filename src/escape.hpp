@@ -12,15 +12,20 @@ namespace Unwind {
     bool unwind_b=false;
   }
 
+  // TODO: add overload to search and delete based on function pointer
   void pop_unwind() {
     unwind_vector.erase(--unwind_vector.end());
   }
   namespace {
+    Log::O verbose = {
+      .v = 1,
+    };
     void run_unwind() {
       if (unwind_vector.empty() == true || unwind_b == true) {
         return;
       }
       for (int x=unwind_vector.size()-1; x>=0; x--) {
+        Log::print(verbose, "Unwinding: ", unwind_vector[x].name);
         unwind_vector[x].fptr();
         pop_unwind();
       }
@@ -55,20 +60,16 @@ namespace Unwind {
       switch (sig) {
         case SIGINT:
           if_used(sig, "SIGINT");
-          Log::print(
-              error,
-              "Received SIGINT (Ctrl+C). Unwinding then Exiting.");
+          Log::print({}, "Received SIGINT (Ctrl+C). Unwinding then Exiting.");
           break;
         case SIGTERM:
           if_used(sig, "SIGTERM");
-          Log::print(error,
-              "Received SIGTERM. Unwinding then Exiting.");
+          Log::print(error, "Received SIGTERM. Unwinding then Exiting.");
           break;
 
         case SIGSEGV:
           if_used(sig, "SIGSEGV");
-          Log::print(error,
-              "Received SIGSEGV. Unwinding then Exiting.");
+          Log::print(error, "Received SIGSEGV. Unwinding then Exiting.");
           break;
 
         default:

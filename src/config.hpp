@@ -145,7 +145,8 @@
   X(BACKEND,  M_MAGENTA)                                                       \
   X(FRONTEND, M_GREEN)                                                         \
   X(OUTPUT,   M_GREEN)                                                         \
-  X(SETTINGS, M_YELLOW)
+  X(SETTINGS, M_YELLOW)                                                        \
+  X(GRAPHICS, M_CYAN)
 
 
 #endif
