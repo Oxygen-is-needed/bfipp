@@ -72,13 +72,12 @@ namespace SimpleTextFrontend {
 #undef X
   };
 
-  void help() {
-      std::cout << "\n" FRONTEND_DESCRIPTION__SIMPLE_TEXT "\n";
-#define X(A,B,C)  Utils::print_help(B, "", C, false);
-      KEYS
+  void help(std::ostream &s = std::cout) {
+    s << "\n" FRONTEND_DESCRIPTION__SIMPLE_TEXT "\n";
+#define X(A, B, C) Utils::print_help(B, "", C, false, s);
+    KEYS
 #undef X
   }
-
 
   unsigned int get_int() {
     std::string input;

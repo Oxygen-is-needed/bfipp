@@ -39,8 +39,8 @@ namespace Args {
 #undef X
     };
 
-    void frontend_help() {
-      void (*const funcs[])() = {
+    void frontend_help(std::ostream& s) {
+      void (*const funcs[])(std::ostream& s) = {
 #define X(A, B, C, ...) C,
           FRONTEND_CONFIG
 #undef X
@@ -49,12 +49,12 @@ namespace Args {
       for (int x=0; x<FRONTEND_LENGTH; x++) {
         if (funcs[x] == nullptr)
           continue;
-        funcs[x]();
+        funcs[x](s);
       }
     }
 
-    void exec_help() {
-#define X(A, F, G, B, C, E) Utils::print_help(A, STR(B), E);
+    void exec_help(std::ostream &s=std::cout) {
+#define X(A, F, G, B, C, E) Utils::print_help(A, STR(B), E, true, s);
       KEYS
 #undef  X
     }
@@ -80,10 +80,9 @@ namespace Args {
   }
   // }}}
 
-  void print_version() {
-    std::cout << "bfi++ " << VERSION << " (" << __DATE__ << ", "
-      << __TIME__ << ") [" << STR(CC) << " " << __VERSION__
-      << "]" << std::endl;
+  void print_version(std::ostream& s=std::cout) {
+    s << "bfi++ " << VERSION << " (" << __DATE__ << ", " << __TIME__ << ") ["
+      << STR(CC) << " " << __VERSION__ << "]" << std::endl;
   }
 
   enum Get_Status {
@@ -115,26 +114,26 @@ namespace Args {
     return true;
   }
 
-  void list_frontends() {
+  void list_frontends(Log::O& v) {
     const std::string_view description[] = {
 #define X(A,B,C,D,...)  D,
       FRONTEND_CONFIG
 #undef  X
     };
 
-    Log::print(verbose, "Listing available frontends.\n\tNOTE: case does not "
+    Log::print(v, "Listing available frontends.\n\tNOTE: case does not "
                         "matter when choosing one.");
 
-    std::cout << FRONTEND_DESCRIPTION "\n";
+    v.fd << FRONTEND_DESCRIPTION "\n";
     for (int x=0; x<FRONTEND_LENGTH; x++) {
       if (Frontend::functions[x].func == nullptr)
         continue;
       if (!description[x].empty()) {
-        std::println("\t{:2}| {:16} - {}", x+1, Frontend::functions[x].name, description[x]);
+        std::println(v.fd, "\t{:2}| {:16} - {}", x+1, Frontend::functions[x].name, description[x]);
         continue;
       }
 
-      std::println("\t{:2}| {:16}", x+1, Frontend::functions[x].name);
+      std::println(v.fd, "\t{:2}| {:16}", x+1, Frontend::functions[x].name);
     }
   }
 
@@ -167,67 +166,71 @@ namespace Args {
     return false;
   }
 
-  void parse(int opt, char* arg) {
+  enum Parse_Status {
+    OK, ///< Continue
+    R_EXIT, ///< Requested Exit
+    ERROR, ///< Error has occured in parsing
+  };
+  enum Parse_Status parse(int opt, char* arg, Log::O& e=error, Log::O& v=verbose) {
     switch (opt) {
       // RUN AND KILL
       case Keys::lhelp:
-        exec_help();
-        frontend_help();
-        exit(0);
+        exec_help(v.fd);
+        frontend_help(v.fd);
+        return R_EXIT;
       case Keys::help:
-        exec_help();
-        exit(0);
+        exec_help(v.fd);
+        return R_EXIT;
       case Keys::version:
-        print_version();
-        exit(0);
+        print_version(v.fd);
+        return R_EXIT;
         break;
 
         // INPUT
       case Keys::file:
         gstat = FILE;
         if (arg == nullptr) {
-          Log::print(error, "Optarg was set to null. No file was provided.");
-          exit(1);
+          Log::print(e, "Optarg was set to null. No file was provided.");
+          return ERROR;
         }
         text = arg;
-        Log::print(verbose, "Enabled input from file");
+        Log::print(v, "Enabled input from file");
         break;
       case Keys::input:
         if (arg == nullptr) {
           gstat = HELLO;
-          Log::print(verbose, "Set input to Hello World default");
+          Log::print(v, "Set input to Hello World default");
           break;
         }
         gstat = TEXT;
         text = arg;
         if (text == "-") {
-          Log::print(verbose, "Reading from stdin for input");
+          Log::print(v, "Reading from stdin for input");
           std::cin >> text;
           break;
         }
-        Log::print(verbose, "Set argument as input");
+        Log::print(v, "Set argument as input");
         break;
 
         // FRONTEND
       case Keys::run:
         frontend = Frontend::NONE;
-        Log::print(verbose, "Enabled run mode");
+        Log::print(v, "Enabled run mode");
         break;
       case Keys::frontend:
         if (arg != nullptr) {
           if (choose_frontend(arg) == false) {
-            Log::print(error, "Unable to find frontend method");
-            exit(1);
+            Log::print(e, "Unable to find frontend method");
+            return ERROR;
           }
-          Log::print(verbose, "Changed frontend to ",
+          Log::print(v, "Changed frontend to ",
               Frontend::functions[frontend].name);
           break;
         }
         [[fallthrough]];
       case Keys::list_fronts:
-        list_frontends();
-        exit(0);
-        break;
+        list_frontends(v);
+        return R_EXIT;
 
         // OUTPUT
       case Keys::only_output:
@@ -236,8 +239,8 @@ namespace Args {
         [[fallthrough]];
       case Keys::output:
         if (arg == nullptr) {
-          Log::print(error, "Unable to find output file");
-          exit(1);
+          Log::print(e, "Unable to find output file");
+          return ERROR;
         }
 
         // TODO: check if already changed
@@ -248,15 +251,16 @@ namespace Args {
         // OTHER
       case Keys::verbose:
         Log::verbose_level = Log::verbose_max;
-        Log::print(verbose, "Enabled Verbose");
+        Log::print(v, "Enabled Verbose");
         break;
       case Keys::gui:
         graphical = true;
         break;
       case -1:
-        Log::print(error, "Unknown Option");
-        exit(1);
+        Log::print(e, "Unknown Option");
+        return ERROR;
     }
+    return OK;
   }
 
   void arguments(int argc, char* argv[]) {
@@ -264,7 +268,14 @@ namespace Args {
     while ((opt = getopt_long(argc, argv, opts, longopts, nullptr)) != -1) {
       if (opt == '?')
         exit(1);
-      parse(Keys::enumerate_key(opt), optarg);
+      switch(parse(Keys::enumerate_key(opt), optarg)) {
+      case OK:
+        break;
+      case R_EXIT:
+        exit(0);
+      case ERROR:
+        exit(1);
+      }
     }
   }
 

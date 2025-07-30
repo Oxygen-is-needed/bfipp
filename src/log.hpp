@@ -44,8 +44,9 @@ namespace Log {
   // }}}
 
 
+  // TODO: method to remove color
   template <typename... Args>
-    void print(struct O o, Args const &...args) {
+    void print(const struct O& o, Args const &...args) {
       if (o.v > verbose_level)
         return;
 

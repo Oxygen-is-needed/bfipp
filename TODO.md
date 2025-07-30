@@ -120,12 +120,13 @@
 
 # v1.2.0 - Outputs and Graphics
 
-- [ ] Main
+- [x] Main
     - [x] Generalize `Args::arguments` to `Args::parse`
-    - [ ] Context Dependent `exit()` from `Args::parse`
+    - [x] Context Dependent `exit()` from `Args::parse`
+    - [x] Can change stream to output
     - [x] `-G` | `--gui` argument to set graphical option
     - [x] Graphical Warning <https://github.com/raysan5/raygui>?
-    - [ ] Manuver to allow for wrapping or adding in frontends to graphics.
+    - [x] Manuver to allow for wrapping or adding in frontends to graphics.
 
 - [x] Output
     - [x] `-o` | `--output` argument specify output file.
