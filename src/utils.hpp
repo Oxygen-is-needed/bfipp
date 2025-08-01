@@ -30,22 +30,30 @@ namespace Utils {
    * A utility function designed to print a portion of a help entry, ensuring
    * consistency in help outputs.
    */
-void print_help(const int &single, const std::string_view &flag,
-                const std::string_view &msg, bool flags = true,
-                std::ostream &s = std::cout) {
+  void print_help(const int &single, const std::string_view &flag,
+                  const std::string_view &msg, bool flags = true,
+                  std::ostream &s = std::cout) {
 
-  std::string_view f[2] = {"-", "--"};
-  std::string_view n[2] = {"", ""};
-  std::string_view(&pre)[2] = (flags == true) ? f : n;
+    std::string_view f[2] = {"-", "--"};
+    std::string_view n[2] = {"", ""};
+    std::string_view(&pre)[2] = (flags == true) ? f : n;
 
-  if (!flag.empty()) {
-    std::println(s, "\t{:1}{} | {:2}{:14}- {}", pre[0], (char)single, pre[1], flag,
-                 msg);
-    return;
+    if (!flag.empty()) {
+      std::println(s, "\t{:1}{} | {:2}{:14}- {}", pre[0], (char)single, pre[1], flag,
+                   msg);
+      return;
+    }
+
+    std::println(s, "\t      {:1}{}{:13}- {}", pre[0], (char)single, ' ', msg);
   }
 
-  std::println(s, "\t      {:1}{}{:13}- {}", pre[0], (char)single, ' ', msg);
-}
+  bool inTerminal() {
+#ifdef _WIN32
+    return GetConsoleWindow != NULL;
+#else
+    return isatty(0);
+#endif
+  }
 }
 
 // Colors {{{

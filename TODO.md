@@ -135,17 +135,24 @@
     - [x] Output raw code
     - [x] Set file as executable
     - [x] Set frontend to be same as the one used at execution
+    - [x] Open Graphical Menu if not running from terminal
 
 - [x] Input
     - [x] See `#!` and ignore that line
 
-- [ ] Frontend
+- [x] Frontend
     - [x] Removable with macro
     - [x] Simple Text
         - [x] Wait till instruction type
         - [x] Clear output buffer
         - [x] Add base number to instruction index
-    - [ ] Simple Graphical Frontend
+    - [x] Simple Graphical Frontend
+        - [x] See Buffer
+        - [x] See instructions
+        - [x] Next Instructions
+        - [x] Step size
+        - [x] Slowly Increment
+        - [x] Default off
 
 - [ ] Document
     - [x] Add frontend function format (eg what input variable)

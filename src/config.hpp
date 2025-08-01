@@ -50,26 +50,19 @@
  *    5) long flag argument type
  *    6) argument description
  */
-#define PROGRAM_FLAGS                                                          \
-  X('f', ':', ' ', file, required_argument, "file: Input file.")               \
-  X('h', ' ', ' ', help, no_argument, "Prints helps text.")                    \
-  X('H', ' ', ' ', lhelp, no_argument, "Prints extra helps text.")             \
-  X('i', ':', ':', input, required_argument,                                   \
-    "[txt]: Input text." NL "Default with no arguments." NL                    \
-    "Use '-' for reading from stdin.")                                         \
-  X('r', ' ', ' ', run, no_argument,                                           \
-    "Run input imediatly, using no frontend.")                                 \
-  X('V', ' ', ' ', verbose, no_argument, "Enable verbose output.")             \
-  X('v', ' ', ' ', version, no_argument, "Print version")                      \
-  X('l', ' ', ' ', list_fronts, no_argument, "List all available frontends.")  \
-  X('F', ':', ':', frontend, optional_argument,                                \
-    "Change the frontend used to render." NL                                   \
-    "Use no arguments to list frontends.")                                     \
-  X('o', ':', ':', output, required_argument,                                  \
-    "Output code as file. Will run frontend.")                                 \
-  X('O', ':', ':', only_output, required_argument,                             \
-    "Only output code as file. Will not run frontend.")                        \
-  X('G', ':', ':', gui, required_argument, "[Not Working] Run with GUI menu.")
+#define PROGRAM_FLAGS \
+  X('h', ' ', ' ', help,        no_argument, "Prints helps text.")\
+  X('H', ' ', ' ', longHelp,    no_argument, "Prints extra helps text.")\
+  X('f', ':', ' ', file,        required_argument, "file: Input file.")\
+  X('i', ':', ':', input,       required_argument, "[txt]: Input text." NL "Default with no arguments." NL "Use '-' for reading from stdin.")\
+  X('r', ' ', ' ', run,         no_argument, "Run input imediatly, using no frontend.")\
+  X('V', ' ', ' ', verbose,     no_argument, "Enable verbose output.")\
+  X('v', ' ', ' ', version,     no_argument, "Print version")\
+  X('l', ' ', ' ', listFronts,  no_argument, "List all available frontends.")\
+  X('F', ':', ':', frontend,    optional_argument, "Change the frontend used to render." NL "Use no arguments to list frontends.")\
+  X('o', ':', ':', output,      required_argument, "Output code as file. Will run frontend.")\
+  X('O', ':', ':', outputOnly,  required_argument, "Only output code as file. Will not run frontend.")\
+  X('G', ':', ':', gui,         required_argument, "[Not Working] Run with GUI menu.")
 
 /**
  * define FRONTEND_DESCRIPTION - Description for what frontends are.
@@ -96,8 +89,9 @@
 #define FRONTEND_CONFIG                                                        \
   X(NONE, None::frontend, nullptr, "Just run and print program output.")       \
   X(SIMPLE_TEXT, SimpleTextFrontend::frontend, SimpleTextFrontend::help,       \
-    "A simple terminal frontend.")
-
+    "A simple terminal frontend.")                                             \
+  X(SIMPLE_GRAPHICS, SimpleGraphicalFrontend::frontend, nullptr,               \
+    "A simple graphical frontend, utilizing ImGui.")
 
 /**
  * define FRONTEND_DESCRIPTION__SIMPLE_TEXT - Description for SIMPLE_TEXT

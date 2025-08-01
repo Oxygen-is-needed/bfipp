@@ -64,7 +64,11 @@ namespace Graphics {
   }
 
 
+  bool is_setup = false;
   bool setup() {
+    if (is_setup == true)
+      return true;
+
     glfwSetErrorCallback(Graphics::glfw_error_callback);
     if (!glfwInit()) {
       // TODO: check for error description
@@ -73,6 +77,7 @@ namespace Graphics {
     }
 
     // TODO: abstract the many versions of this somewhere else
+    // TODO: get the other platform versions
     const char* glsl_version = "#version 130";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
@@ -113,14 +118,10 @@ namespace Graphics {
     ImGui_ImplGlfw_InitForOpenGL(Graphics::window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
+    is_setup = true;
     return true;
   }
 
-  // TODO: comments add
-  enum Main_Loop_Status {
-    CONTINUE = 0,
-    END = 1,
-  };
   struct Main_Function {
     bool e = false;
     size_t index = 0;
@@ -137,12 +138,13 @@ namespace Graphics {
       });
   }
 
-  enum Main_Loop_Status main() {
+  bool main() {
     if (glfwWindowShouldClose(window)) {
-      kill_me = true;
+      return false;
     }
     if (kill_me == true) {
-      return END;
+      kill_me = false;
+      return false;
     }
 
     static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -150,7 +152,7 @@ namespace Graphics {
     glfwPollEvents();
     if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0) {
       ImGui_ImplGlfw_Sleep(10);
-      return CONTINUE;
+      return true;
     }
 
     // Start Frame
@@ -176,7 +178,7 @@ namespace Graphics {
 
     glfwSwapBuffers(Graphics::window);
 
-    return CONTINUE;
+    return true;
   }
 }
 //}}}

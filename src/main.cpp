@@ -10,6 +10,12 @@
 #include <string>
 #include <vector>
 
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+
 #include "config.hpp"
 #include "utils.hpp"
 #include "log.hpp"
@@ -174,7 +180,7 @@ namespace Args {
   enum Parse_Status parse(int opt, char* arg, Log::O& e=error, Log::O& v=verbose) {
     switch (opt) {
       // RUN AND KILL
-      case Keys::lhelp:
+      case Keys::longHelp:
         exec_help(v.fd);
         frontend_help(v.fd);
         return R_EXIT;
@@ -228,12 +234,12 @@ namespace Args {
           break;
         }
         [[fallthrough]];
-      case Keys::list_fronts:
+      case Keys::listFronts:
         list_frontends(v);
         return R_EXIT;
 
         // OUTPUT
-      case Keys::only_output:
+      case Keys::outputOnly:
         frontend_run = false;
 
         [[fallthrough]];
@@ -264,6 +270,11 @@ namespace Args {
   }
 
   void arguments(int argc, char* argv[]) {
+
+    if (Utils::inTerminal() != true) {
+      graphical = true;
+    }
+
     int opt = 0;
     while ((opt = getopt_long(argc, argv, opts, longopts, nullptr)) != -1) {
       if (opt == '?')
@@ -311,41 +322,61 @@ namespace Args {
 // Graphical {{{
 namespace Graphical {
 #ifndef DISABLE_GRAPHICS
-  void warningPopup(Graphics::Main_Function&) {
+  bool cleanup = true;
+  bool end = false;
+  void warningPopup(Graphics::Main_Function& mf) {
     static int popup = true;
     if (popup == true) {
-      ImGui::OpenPopup("Warning !");
+      ImGui::OpenPopup("Warning!");
       popup = false;
     }
 
-    if (ImGui::BeginPopupModal("Warning !")) {
+    if (ImGui::BeginPopupModal("Warning!")) {
       ImGui::Text("This is currently not a graphical application.\n");
       ImGui::TextWrapped("This program should be used in the terminal."
           "For the documentation for this program please visit:");
       ImGui::TextLinkOpenURL("https://github.com/Oxygen-is-needed/bfipp", NULL);
 
-      if (Graphics::centerButton("Ok"))
+      if (Graphics::centerButton("Ok")) {
         Graphics::kill_me = true;
+        end = true;
+      }
 
-      if (Graphics::centerButton("Load \"Hello World\""))
+      if (Graphics::centerButton("Run G")) {
+        Args::parse(Args::Keys::frontend, (char*)"3");
         Args::parse(Args::Keys::input, nullptr);
+        mf.e = false;
+        cleanup = false;
+        Graphics::kill_me = true;
+      }
 
       ImGui::EndPopup();
     }
   }
 
-  void menu() {
+  void run() {
     // Setup
     if (Graphics::setup() != true)
       return;
 
     // Main loop
-    Graphics::mainFuncAdd(warningPopup);
-    Graphics::Main_Loop_Status status = Graphics::END;
-    while ((status = Graphics::main()) == Graphics::CONTINUE) ;
+    while (Graphics::main() == true) ;
+    if (cleanup == false) {
+      return;
+    }
 
     // Cleanup
     Graphics::End::end();
+
+    // TODO: investigate better method
+    if (end == true) {
+      exit(0);
+    }
+  }
+
+  void menu() {
+    Graphics::mainFuncAdd(warningPopup);
+    run();
   }
 #else
   void menu() {
