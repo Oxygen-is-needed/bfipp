@@ -301,6 +301,9 @@ namespace SimpleGraphicalFrontend {
     if (ImGui::Button("Next")) {
       glSteps(step_mult);
     }
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+      ImGui::SetTooltip("Increment.");
+    }
 
     {
       // TODO: move to graphics file
@@ -308,6 +311,9 @@ namespace SimpleGraphicalFrontend {
 
       static bool is_auto = false;
       ImGui::Checkbox("##", &is_auto);
+      if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+        ImGui::SetTooltip("Enable Auto-Stepping.");
+      }
       ImGui::SameLine();
 
       static float step_rate = 0.5f;
@@ -318,8 +324,14 @@ namespace SimpleGraphicalFrontend {
               ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_AlwaysClamp)) {
         step_time_goal = static_cast<unsigned int>(rate * step_rate);
       }
+      if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+        ImGui::SetTooltip("Amount of step progressions per second.");
+      }
 
       ImGui::SliderInt("Step Size", &step_mult, 1, 10);
+      if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+        ImGui::SetTooltip("Amount of steps taken per increment.");
+      }
 
       if (is_auto == true) {
         step_time++;

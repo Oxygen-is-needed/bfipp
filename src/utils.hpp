@@ -47,9 +47,14 @@ namespace Utils {
     std::println(s, "\t      {:1}{}{:13}- {}", pre[0], (char)single, ' ', msg);
   }
 
+//#ifdef _WIN32
+//#include <windows.h>
+//#endif
+
   bool inTerminal() {
 #ifdef _WIN32
-    return GetConsoleWindow != NULL;
+    //return GetConsoleWindow() != NULL;
+    return false;
 #else
     return isatty(0);
 #endif

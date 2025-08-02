@@ -154,18 +154,18 @@
         - [x] Slowly Increment
         - [x] Default off
 
-- [ ] Document
+- [x] Document
     - [x] Add frontend function format (eg what input variable)
-    - [ ] Add output documentation
 
 
 - [ ] Wrap Up
+    - [x] Support for Windows Compilation
+    - [x] Add release compilation
     - [ ] Update README.md
     - [ ] Update Program Usage
     - [ ] Detect Unused Code
     - [ ] Look at TODO's
     - [ ] Update Version Number
-    - [ ] Package and Release `cmake -DCMAKE_BUILD_TYPE=Release`
 
 # Ideas
 

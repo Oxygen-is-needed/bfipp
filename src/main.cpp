@@ -10,12 +10,6 @@
 #include <string>
 #include <vector>
 
-#ifdef _WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#endif
-
 #include "config.hpp"
 #include "utils.hpp"
 #include "log.hpp"

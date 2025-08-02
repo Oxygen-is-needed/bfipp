@@ -19,18 +19,22 @@ and code execution.
 ## Program Usage
 
 ```
-        -f | --file          - file: Input file.
         -h | --help          - Prints helps text.
-        -H | --lhelp         - Prints extra helps text.
-        -i | --input         - [txt]: Input text.
-                                Default with no arguments.
-                                Use '-' for reading from stdin.
-        -r | --run           - Run input imediatly, using no frontend.
+        -H | --longHelp      - Prints extra helps text.
         -V | --verbose       - Enable verbose output.
         -v | --version       - Print version
-        -l | --list-fronts   - List all available frontends.
+
+        -f | --file          - file: Input file.
+        -i | --input         - [txt]: Input text. Default with no arguments.
+                                Use '-' for reading from stdin.
+        -r | --run           - Run input imediatly, using no frontend.
+
+        -l | --listFronts    - List all available frontends.
         -F | --frontend      - Change the frontend used to render.
                                 Use no arguments to list frontends.
+        -o | --output        - Output code as file. Will run frontend.
+        -O | --outputOnly    - Only output code as file. Will not run frontend.
+        -G | --gui           - [Not Working] Run with GUI menu.
 ```
 
 
