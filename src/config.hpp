@@ -70,7 +70,7 @@
     "Output code as file. Will run frontend.")                               \
   X('O', ':', ':', outputOnly, required_argument,                            \
     "Only output code as file. Will not run frontend.")                      \
-  X('G', ':', ':', gui, required_argument, "[Not Working] Run with GUI menu.")
+  X('G', ':', ':', gui, required_argument, "Run with GUI menu.")
 
 /**
  * define FRONTEND_DESCRIPTION - Description for what frontends are.

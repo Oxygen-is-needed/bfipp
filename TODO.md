@@ -171,7 +171,23 @@
 # v1.3.0 - Graphical Update
 
 - [ ] Main
+    - [ ] `-N` | `--no-gui` argument to hard set graphics disabled.
+    - [ ] Graphical menu
+        - [ ] help text
+        - [ ] show version
+        - [ ] select input type and handle it
+        - [ ] select output
+        - [ ] output as file only
+
 - [ ] Frontend
+    - [ ] <new> Graphical frontend
+        - [ ] Buffer Heat map
+        - [ ] Current Instructions (with middle enlarged)
+    - [ ] Simple Text
+        - Run till spicific amount of steps.
+    - [ ] Simple Graphical
+        - [ ] feature parity about, with simple text
+
 - [ ] General
     - [ ] Better method than bool array for `is_graphical
 
@@ -208,9 +224,7 @@
         - Support for boolf\*\*k? https://esolangs.org/wiki/Boolfuck
         - Support for sembly? https://esolangs.org/wiki/Sembly
 - Frontend
-    - Heat map for which tokens are access the most.
     - Simple Text
-        - Run till spicific amount of steps.
         - Input buffer?
         - Wait till break out of loop.
         - add keybinds to extend inspect

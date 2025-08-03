@@ -22,6 +22,10 @@ if [ -n "$UPDATE" ]; then
 	done
 fi
 
+if [ -n "$STATIC" ]; then
+	LIBS+=" -static"
+fi
+
 
 OUT_FILE=bfi++
 OUT_DIR=pkg
