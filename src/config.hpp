@@ -13,13 +13,13 @@
  */
 #define NL "\n" NT
 
-
 /**
  * define PROGRAM_DESCRIPTION - Program Description.
  */
-#define PROGRAM_DESCRIPTION                                                    \
-  "`bfi++` is a Brainf*** interpreter and virtual machine designed for "       \
-  "\nadaptability and extensibility, offering multiple frontends to visualize "\
+#define PROGRAM_DESCRIPTION                                              \
+  "`bfi++` is a Brainf*** interpreter and virtual machine designed for " \
+  "\nadaptability and extensibility, offering multiple frontends to "    \
+  "visualize "                                                           \
   "\nmemory and code execution."
 
 /**
@@ -50,25 +50,33 @@
  *    5) long flag argument type
  *    6) argument description
  */
-#define PROGRAM_FLAGS \
-  X('h', ' ', ' ', help,        no_argument, "Prints helps text.")\
-  X('H', ' ', ' ', longHelp,    no_argument, "Prints extra helps text.")\
-  X('f', ':', ' ', file,        required_argument, "file: Input file.")\
-  X('i', ':', ':', input,       required_argument, "[txt]: Input text." NL "Default with no arguments." NL "Use '-' for reading from stdin.")\
-  X('r', ' ', ' ', run,         no_argument, "Run input imediatly, using no frontend.")\
-  X('V', ' ', ' ', verbose,     no_argument, "Enable verbose output. Default: Max")\
-  X('v', ' ', ' ', version,     no_argument, "Print version")\
-  X('l', ' ', ' ', listFronts,  no_argument, "List all available frontends.")\
-  X('F', ':', ':', frontend,    optional_argument, "Change the frontend used to render." NL "Use no arguments to list frontends.")\
-  X('o', ':', ':', output,      required_argument, "Output code as file. Will run frontend.")\
-  X('O', ':', ':', outputOnly,  required_argument, "Only output code as file. Will not run frontend.")\
-  X('G', ':', ':', gui,         required_argument, "[Not Working] Run with GUI menu.")
+#define PROGRAM_FLAGS                                                        \
+  X('h', ' ', ' ', help, no_argument, "Prints helps text.")                  \
+  X('H', ' ', ' ', longHelp, no_argument, "Prints extra helps text.")        \
+  X('f', ':', ' ', file, required_argument, "file: Input file.")             \
+  X('i', ':', ':', input, required_argument,                                 \
+    "[txt]: Input text." NL "Default with no arguments." NL                  \
+    "Use '-' for reading from stdin.")                                       \
+  X('r', ' ', ' ', run, no_argument,                                         \
+    "Run input imediatly, using no frontend.")                               \
+  X('V', ' ', ' ', verbose, no_argument,                                     \
+    "Enable verbose output. Default: Max")                                   \
+  X('v', ' ', ' ', version, no_argument, "Print version")                    \
+  X('l', ' ', ' ', listFronts, no_argument, "List all available frontends.") \
+  X('F', ':', ':', frontend, optional_argument,                              \
+    "Change the frontend used to render." NL                                 \
+    "Use no arguments to list frontends.")                                   \
+  X('o', ':', ':', output, required_argument,                                \
+    "Output code as file. Will run frontend.")                               \
+  X('O', ':', ':', outputOnly, required_argument,                            \
+    "Only output code as file. Will not run frontend.")                      \
+  X('G', ':', ':', gui, required_argument, "[Not Working] Run with GUI menu.")
 
 /**
  * define FRONTEND_DESCRIPTION - Description for what frontends are.
  */
-#define FRONTEND_DESCRIPTION                                                   \
-  "Select a frontend to modify how the code is displayed during execution\n"   \
+#define FRONTEND_DESCRIPTION                                                 \
+  "Select a frontend to modify how the code is displayed during execution\n" \
   "(or even how if it is viewed)."
 /**
  * define FRONTEND_CONFIG - Configuration for Frontends.
@@ -88,9 +96,9 @@
   X(NONE, None::frontend, nullptr, false,                                \
     "Just run and print program output.")                                \
   X(SIMPLE_TEXT, SimpleTextFrontend::frontend, SimpleTextFrontend::help, \
-    false, "A simple terminal frontend.")                                 \
-  X(SIMPLE_GRAPHICS, SimpleGraphicalFrontend::frontend, nullptr,         \
-    true, "A simple graphical frontend, utilizing ImGui.")
+    false, "A simple terminal frontend.")                                \
+  X(SIMPLE_GRAPHICS, SimpleGraphicalFrontend::frontend, nullptr, true,   \
+    "A simple graphical frontend, utilizing ImGui.")
 
 /**
  * define FRONTEND_DESCRIPTION__SIMPLE_TEXT - Description for SIMPLE_TEXT
@@ -107,14 +115,14 @@
  *  2) Key employed by SIMPLE_TEXT.
  *  3) Description of the keybind usage.
  */
-#define FRONTEND_KEYS__SIMPLE_TEXT                                                     \
-  X(QUIT,         'q', "Quit Frontend.")                                               \
-  X(HELP,         'h', "Prints help text.")                                            \
-  X(RUN,          'r', "Run entire program without user input.")                       \
-  X(SKIP,         's', "num: Skip a defined amount each step.")                        \
-  X(WAIT,         'w', "num: Wait till defined instruction counter.")                  \
-  X(INSTRUCTION,  'i', "instruciton: Wati till defined instruction charactor.")        \
-  X(CLEAR,        'c', "Clear output.")
+#define FRONTEND_KEYS__SIMPLE_TEXT                                             \
+  X(QUIT, 'q', "Quit Frontend.")                                               \
+  X(HELP, 'h', "Prints help text.")                                            \
+  X(RUN, 'r', "Run entire program without user input.")                        \
+  X(SKIP, 's', "num: Skip a defined amount each step.")                        \
+  X(WAIT, 'w', "num: Wait till defined instruction counter.")                  \
+  X(INSTRUCTION, 'i', "instruciton: Wati till defined instruction charactor.") \
+  X(CLEAR, 'c', "Clear output.")
 
 /**
  * define OUTPUT_CONFIG - Configerations for outputs.
@@ -125,9 +133,7 @@
  *  2) Output function, used to run the output method.
  *  3) Output Description.
  */
-#define OUTPUT_CONFIG \
-  X(RAW, RawOut::output, "Export a raw code executable.")
-
+#define OUTPUT_CONFIG X(RAW, RawOut::output, "Export a raw code executable.")
 
 /**
  * define PRINT_LOG_METHODS - Names and Colors used for Logging each method.
@@ -140,15 +146,14 @@
  *  1) Log name, used to invoke the method.
  *  2) Log colro, used to color the name when printing.
  */
-#define PRINT_LOG_METHODS                                                      \
-  X(NONE,     0)                                                               \
-  X(VM,       M_BLUE)                                                          \
-  X(BACKEND,  M_MAGENTA)                                                       \
-  X(FRONTEND, M_GREEN)                                                         \
-  X(OUTPUT,   M_GREEN)                                                         \
-  X(SETTINGS, M_YELLOW)                                                        \
+#define PRINT_LOG_METHODS \
+  X(NONE, 0)              \
+  X(VM, M_BLUE)           \
+  X(BACKEND, M_MAGENTA)   \
+  X(FRONTEND, M_GREEN)    \
+  X(OUTPUT, M_GREEN)      \
+  X(SETTINGS, M_YELLOW)   \
   X(GRAPHICS, M_CYAN)
-
 
 #endif
 // vim: tabstop=2 shiftwidth=2 softtabstop=2 expandtab

@@ -2,7 +2,6 @@
 #define GRAPHICS__HPP
 #ifndef DISABLE_GRAPHICS
 
-
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -10,16 +9,15 @@
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <GLES2/gl2.h>
 #endif
-#include <GLFW/glfw3.h> // Will drag system OpenGL headers
-
+#include <GLFW/glfw3.h>  // Will drag system OpenGL headers
 
 // Graphics {{{
 namespace Graphics {
   GLFWwindow* window = nullptr;
 
   struct Log::O g_error = {
-    .e = true,
-    .lm = Log::GRAPHICS
+      .e = true,
+      .lm = Log::GRAPHICS,
   };
 
   namespace End {
@@ -40,17 +38,16 @@ namespace Graphics {
       Unwind::add_unwind({
           .fptr = cleanup,
           .name = "Graphics::End::cleanup",
-          });
+      });
     }
   }
 
-
-  static void glfw_error_callback(int error, const char *description) {
+  static void glfw_error_callback(int error, const char* description) {
     Log::print(g_error, "GLFW Error ", error, ": ", description);
   }
 
-  bool centerButton(const char *label, float alignment = 0.5f) {
-    ImGuiStyle &style = ImGui::GetStyle();
+  bool centerButton(const char* label, float alignment = 0.5f) {
+    ImGuiStyle& style = ImGui::GetStyle();
 
     float size = ImGui::CalcTextSize(label).x + style.FramePadding.x * 2.0f;
     float avail = ImGui::GetContentRegionAvail().x;
@@ -63,7 +60,6 @@ namespace Graphics {
     return ImGui::Button(label);
   }
 
-
   bool is_setup = false;
   bool setup() {
     if (is_setup == true)
@@ -74,7 +70,6 @@ namespace Graphics {
       Log::print(Graphics::g_error, "Failed to initalize glfw");
       return false;
     }
-
 
     // Decide GL+GLSL versions
 #if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -95,7 +90,7 @@ namespace Graphics {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // Required on Mac
 #else
     // GL 3.0 + GLSL 130
     const char* glsl_version = "#version 130";
@@ -103,10 +98,9 @@ namespace Graphics {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 #endif
 
-
     // Create window with graphics context
-    float main_scale = ImGui_ImplGlfw_GetContentScaleForMonitor(
-        glfwGetPrimaryMonitor());
+    float main_scale =
+        ImGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor());
     Graphics::window =
         glfwCreateWindow((int)(1280 * main_scale), (int)(800 * main_scale),
                          "BFI++", nullptr, nullptr);
@@ -152,12 +146,12 @@ namespace Graphics {
   std::vector<Main_Function> main_functions;
   static bool kill_me = false;
 
-  void mainFuncAdd(void (*const fptr)(Main_Function&), bool enable=true) {
+  void mainFuncAdd(void (*const fptr)(Main_Function&), bool enable = true) {
     main_functions.push_back({
         .e = enable,
         .index = main_functions.size(),
-        .fptr = fptr
-      });
+        .fptr = fptr,
+    });
   }
 
   bool main() {

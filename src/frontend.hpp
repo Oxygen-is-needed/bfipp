@@ -7,9 +7,9 @@ namespace Frontend_Utils {
     if (output.empty())
       return;
 
-    std::cout << C::M << "\nOUTPUT =====\n" << C::RESET
-      << output
-      << C::M << "\n============" << C::RESET << std::endl;
+    std::cout << C::M << "\nOUTPUT =====\n"
+              << C::RESET << output << C::M << "\n============" << C::RESET
+              << std::endl;
     fflush(stdout);
   }
 
@@ -29,39 +29,39 @@ namespace Frontend_Utils {
       mwidth = std::numeric_limits<int>::max();
     }
 
-    int width=view_frame;
-    unsigned int out=5;
+    int width = view_frame;
+    unsigned int out = 5;
     os << vm.total_steps << ": ";
-    unsigned int y=0;
-    for (int x=0; x<width && y<mwidth && y<vm.rules.tape_length; x++,y++) {
+    unsigned int y = 0;
+    for (int x = 0; x < width && y < mwidth && y < vm.rules.tape_length;
+         x++, y++) {
       if (vm.buffer[y] != 0) {
-        x=0;
+        x = 0;
       }
 
       std::string code = "";
       if (vm.buffer[y] != 0) {
         if (isprint(vm.buffer[y]) == 0 || vm.buffer[y] == ' ') {
           code = std::to_string(vm.buffer[y]);
-        } else  {
+        } else {
           code += vm.buffer[y];
         }
       }
 
       if (vm.pc == y) {
-        os << ic[0] << "{" << ic[1]
-          << code
-          << ic[0] << "} " << ic[2];
+        os << ic[0] << "{" << ic[1] << code << ic[0] << "} " << ic[2];
         continue;
       }
 
       os << "[" << code << "] ";
     }
     os << std::endl;
-    out += 4*y;
+    out += 4 * y;
     return out;
   }
 
-  void inspect_instructions(VM& vm, std::ostream& os=std::cout, std::string (&ic)[3] = ic_default) {
+  void inspect_instructions(VM& vm, std::ostream& os = std::cout,
+                            std::string (&ic)[3] = ic_default) {
     const unsigned int sub = 4;
     unsigned int cap = vm.ins_max;
     unsigned int frame_len = 9;
@@ -77,30 +77,23 @@ namespace Frontend_Utils {
     else
       start = pc - sub;
 
-    unsigned int end = start+frame_len;
+    unsigned int end = start + frame_len;
     if (end > cap)
       end = cap;
 
-
     os << "I: ";
-    for (unsigned int x=start; x<end; x++) {
+    for (unsigned int x = start; x < end; x++) {
       if (x == pc) {
-        os
-          << ic[0] << "("
-          << ic[1] << vm.code[x]
-          << ic[0] << ")" << ic[2];
+        os << ic[0] << "(" << ic[1] << vm.code[x] << ic[0] << ")" << ic[2];
         continue;
       }
-      os
-        << ic[0] << "[" << ic[2]
-        << vm.code[x]
-        << ic[0] << "]" << ic[2];
+      os << ic[0] << "[" << ic[2] << vm.code[x] << ic[0] << "]" << ic[2];
     }
     os << "\n   ";
-    for (unsigned int x=start; x<end; x++) {
-      os << "`" << x%10 << "`";
+    for (unsigned int x = start; x < end; x++) {
+      os << "`" << x % 10 << "`";
     }
-    os << " +" << (pc/10)*10 << std::endl;
+    os << " +" << (pc / 10) * 10 << std::endl;
   }
 }
 // }}}
@@ -117,15 +110,15 @@ namespace None {
 // SimpleTextFrontend {{{
 namespace SimpleTextFrontend {
 #ifndef DISABLE_FRONTEND__SIMPLE_TEXT
-#define KEYS  FRONTEND_KEYS__SIMPLE_TEXT
+#define KEYS FRONTEND_KEYS__SIMPLE_TEXT
 
   enum Keybinds {
-#define X(A,B,C) A = B,
+#define X(A, B, C) A = B,
     KEYS
 #undef X
   };
 
-  void help(std::ostream &s = std::cout) {
+  void help(std::ostream& s = std::cout) {
     s << "\n" FRONTEND_DESCRIPTION__SIMPLE_TEXT "\n";
 #define X(A, B, C) Utils::print_help(B, "", C, false, s);
     KEYS
@@ -135,19 +128,21 @@ namespace SimpleTextFrontend {
   unsigned int get_int() {
     std::string input;
     std::cin >> input;
-    return static_cast<unsigned int>
-      (std::stoul(input));
+    return static_cast<unsigned int>(std::stoul(input));
   }
-  void keybindings(VM& vm, char &key, bool &ret, bool &ug, int &phelp,
-      unsigned int &skip, unsigned int &wait, char& wi) {
-    switch(key) {
+  void keybindings(VM& vm, char& key, bool& ret, bool& ug, int& phelp,
+                   unsigned int& skip, unsigned int& wait, char& wi) {
+    switch (key) {
       case QUIT:
-        ret = false; return;
+        ret = false;
+        return;
       case HELP:
-        phelp = 2; return;
+        phelp = 2;
+        return;
 
       case RUN:
-        ug = false; return;
+        ug = false;
+        return;
       case SKIP:
         skip = get_int();
         return;
@@ -186,7 +181,7 @@ namespace SimpleTextFrontend {
 
     C::hide_cursor();
     Unwind::add_unwind({unwind, "SimpleTextFrontend::unwind"});
-    while(ret != false) {
+    while (ret != false) {
       if (user_guided == true && skip_i++ >= skip &&
           (wait == 0 || wait < vm.ins_i) &&
           (wait_instruction == 0 ||
@@ -196,7 +191,8 @@ namespace SimpleTextFrontend {
         char in = getchar();
         std::string input;
 
-        keybindings(vm, in, ret, user_guided, phelp, skip, wait, wait_instruction);
+        keybindings(vm, in, ret, user_guided, phelp, skip, wait,
+                    wait_instruction);
         if (ret == false)
           continue;
 
@@ -230,7 +226,7 @@ namespace SimpleTextFrontend {
 // }}}
 // SimpleGraphicalFrontend {{{
 namespace SimpleGraphicalFrontend {
-  namespace { // <anonymous>
+  namespace {  // <anonymous>
     VM* local_vm = nullptr;
     bool done = false;
   }
@@ -256,13 +252,13 @@ namespace SimpleGraphicalFrontend {
     ImGui::EndMenuBar();
   }
 
-  void glSteps(const int& mult) {
-        for (int x=0; x<mult; x++) {
-          if (local_vm->step() != false)
-            continue;
-          done = true;
-          break;
-        }
+  static void glSteps(const int& mult) {
+    for (int x = 0; x < mult; x++) {
+      if (local_vm->step() != false)
+        continue;
+      done = true;
+      break;
+    }
   }
 
   void graphical_loop(Graphics::Main_Function&) {
@@ -287,7 +283,7 @@ namespace SimpleGraphicalFrontend {
 
     std::stringstream ss;
     Frontend_Utils::inspect_buffer(*local_vm, 14, 14, ss,
-        Frontend_Utils::ic_none);
+                                   Frontend_Utils::ic_none);
     buf = ss.str();
 
     std::stringstream ssi;
@@ -347,16 +343,14 @@ namespace SimpleGraphicalFrontend {
     ImGui::End();
   }
 
-  void help(/*std::ostream &s = std::cout*/) {
-
-  }
+  void help(/*std::ostream &s = std::cout*/) {}
   void frontend(VM& vm) {
     if (Graphics::setup() != true)
       return;
     local_vm = &vm;
     Graphics::mainFuncAdd(graphical_loop);
 
-    while (Graphics::main() == true) ;
+    while (Graphics::main() == true) {}
 
     Graphics::End::end();
     local_vm = nullptr;
@@ -366,15 +360,15 @@ namespace SimpleGraphicalFrontend {
 
 // Frontend {{{
 namespace Frontend {
-#define CONFIG  FRONTEND_CONFIG
-#define CONF                                                                   \
-  CONFIG                                                                       \
+#define CONFIG FRONTEND_CONFIG
+#define CONF \
+  CONFIG     \
   X(_LEN, nullptr)
 
   enum Frontend_Index {
-#define X(A,B,...)  A,
+#define X(A, B, ...) A,
     CONF
-#undef  X
+#undef X
   };
 
   struct Functions {
@@ -383,31 +377,30 @@ namespace Frontend {
   };
 
   const char* name[] = {
-#define X(A,B,...)  STR(A),
-    CONFIG
-#undef  X
+#define X(A, B, ...) STR(A),
+      CONFIG
+#undef X
   };
 
   const struct Functions functions[] = {
-#define X(A,B,...)  { .name = STR(A) , .func = B },
-    CONFIG
-#undef  X
+#define X(A, B, ...) {.name = STR(A), .func = B},
+      CONFIG
+#undef X
   };
 
-#undef  CONF
-#undef  CONFIG
-
+#undef CONF
+#undef CONFIG
 
   const Log::O error = {
-    .e = true,
-    .lm = Log::FRONTEND,
+      .e = true,
+      .lm = Log::FRONTEND,
   };
 
   void frontend(Backend& backend, enum Frontend_Index fi) {
     if (backend.state != Backend::EXE) {
       Log::print(error,
-          "Program: Frontend self-incrementing of backend status not supported.\n"
-          "Will need to increment status to Execution.");
+                 "Program: Frontend self-incrementing of backend status not "
+                 "supported.\n Will need to increment status to Execution.");
       exit(1);
     }
 

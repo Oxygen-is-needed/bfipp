@@ -165,9 +165,8 @@
     - [x] Update Program Usage
     - [x] Detect Unused Code
     - [x] Look at TODO's
-    - [ ] use `clang-format`
-    - [ ] Update Version Number
-
+    - [x] use `clang-format`
+    - [x] Update Version Number
 
 # v1.3.0 - Graphical Update
 

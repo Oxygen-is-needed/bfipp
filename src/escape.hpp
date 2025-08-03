@@ -4,20 +4,18 @@
 // Unwinding {{{
 namespace Unwind {
   namespace {
-    Log::O verbose = {
-      .v = 2,
-    };
+    Log::O verbose = {.v = 2};
 
     struct Unwind {
       void (*fptr)();
       std::string name;
     };
     std::vector<Unwind> unwind_vector;
-    bool unwind_b=false;
+    bool unwind_b = false;
   }
 
   void pop_unwind(void (*fptr)()) {
-    for (int x=0; x<static_cast<int>(unwind_vector.size());) {
+    for (int x = 0; x < static_cast<int>(unwind_vector.size());) {
       if (unwind_vector[x].fptr == fptr) {
         Log::print(verbose, "Popping: ", unwind_vector[x].name);
         unwind_vector.erase(unwind_vector.begin() + x);
@@ -34,7 +32,7 @@ namespace Unwind {
       if (unwind_vector.empty() == true || unwind_b == true) {
         return;
       }
-      for (int x=unwind_vector.size()-1; x>=0; x--) {
+      for (int x = unwind_vector.size() - 1; x >= 0; x--) {
         Log::print(verbose, "Unwinding: ", unwind_vector[x].name);
         unwind_vector[x].fptr();
         pop_unwind();
@@ -52,14 +50,15 @@ namespace Unwind {
 
   namespace {
     const Log::O error = {
-      .e = true,
-      .lm = Log::NONE
+        .e = true,
+        .lm = Log::NONE,
     };
 
     static int used_signal = 0;
     void if_used(int sig, const std::string& name) {
       if (used_signal == sig) {
-        Log::print(error, "Caught multiple ", name, " signals. Exiting Immediately.");
+        Log::print(error, "Caught multiple ", name,
+                   " signals. Exiting Immediately.");
         exit(sig);
       }
 
@@ -92,18 +91,18 @@ namespace Unwind {
   }
   void signal_handler() {
 #ifdef _WIN32
-    signal(SIGINT,  handle_sigint);
+    signal(SIGINT, handle_sigint);
     signal(SIGTERM, handle_sigint);
     signal(SIGABRT, handle_sigint);
 #else
     struct sigaction sa;
 
-    sa.sa_handler   = &handle_sigint;
-    sa.sa_flags     = SA_RESTART;
+    sa.sa_handler = &handle_sigint;
+    sa.sa_flags = SA_RESTART;
 
-    sigaction(SIGINT,   &sa, nullptr);
-    sigaction(SIGTERM,  &sa, nullptr);
-    sigaction(SIGSEGV,  &sa, nullptr);
+    sigaction(SIGINT, &sa, nullptr);
+    sigaction(SIGTERM, &sa, nullptr);
+    sigaction(SIGSEGV, &sa, nullptr);
 #endif
   }
 

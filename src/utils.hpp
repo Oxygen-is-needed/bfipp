@@ -3,16 +3,15 @@
 #include <signal.h>
 #include <cstring>
 
-#define _STR(x)	#x
-#define STR(x)	_STR(x)
+#define _STR(x) #x
+#define STR(x) _STR(x)
 
-
-#define X(A,...)  1,
-#define COUNT(...)  (sizeof((int[]){__VA_ARGS__}) / sizeof(int))
+#define X(A, ...) 1,
+#define COUNT(...) (sizeof((int[]){__VA_ARGS__}) / sizeof(int))
 const int __frontend_config_len = COUNT(FRONTEND_CONFIG);
 #define FRONTEND_LENGTH __frontend_config_len
-#undef  COUNT
-#undef  X
+#undef COUNT
+#undef X
 
 namespace Utils {
   /**
@@ -30,31 +29,26 @@ namespace Utils {
    * A utility function designed to print a portion of a help entry, ensuring
    * consistency in help outputs.
    */
-  void print_help(const int &single, const std::string_view &flag,
-                  const std::string_view &msg, bool flags = true,
-                  std::ostream &s = std::cout) {
+  void print_help(const int& single, const std::string_view& flag,
+                  const std::string_view& msg, bool flags = true,
+                  std::ostream& s = std::cout) {
 
     std::string_view f[2] = {"-", "--"};
     std::string_view n[2] = {"", ""};
     std::string_view(&pre)[2] = (flags == true) ? f : n;
 
     if (!flag.empty()) {
-      std::println(s, "\t{:1}{} | {:2}{:14}- {}", pre[0], (char)single, pre[1], flag,
-                   msg);
+      std::println(s, "\t{:1}{} | {:2}{:14}- {}", pre[0], (char)single, pre[1],
+                   flag, msg);
       return;
     }
 
     std::println(s, "\t      {:1}{}{:13}- {}", pre[0], (char)single, ' ', msg);
   }
 
-//#ifdef _WIN32
-//#include <windows.h>
-//#endif
-
   bool inTerminal() {
 #ifdef _WIN32
-    //return GetConsoleWindow() != NULL;
-    return false;
+    return std::cout.good() && std::cout.rdbuf()->in_avail() == 0;
 #else
     return isatty(0);
 #endif
@@ -63,6 +57,7 @@ namespace Utils {
 
 // Colors {{{
 namespace C {
+  /* clang-format off */
 #define M_RESET		  0
 #define M_BLACK		  30
 #define M_RED     	31
@@ -90,30 +85,30 @@ namespace C {
     UNDERLINE	= 4,
     INVERSE 	= 7,
   };
-
+  /* clang-format on */
 
   void set_color(int a) {
     std::cout << "\033[" << a << "m";
   }
 
-  void clear(std::ostream& stream=std::cout) {
+  void clear(std::ostream& stream = std::cout) {
     stream << "\033[2J\033[H";
   }
-  void clear_c2end(std::ostream& stream=std::cout) {
+  void clear_c2end(std::ostream& stream = std::cout) {
     stream << "\033[0J";
   }
 
-  void hide_cursor(std::ostream& stream=std::cout) {
+  void hide_cursor(std::ostream& stream = std::cout) {
     stream << "\033[?25l";
   }
-  void show_cursor(std::ostream& stream=std::cout) {
+  void show_cursor(std::ostream& stream = std::cout) {
     stream << "\033[?25h";
   }
 
-  void move_up(unsigned int i=1, std::ostream& stream=std::cout) {
+  void move_up(unsigned int i = 1, std::ostream& stream = std::cout) {
     stream << "\033[" << i << "A";
   }
-  void move_down(unsigned int i=1, std::ostream& stream=std::cout) {
+  void move_down(unsigned int i = 1, std::ostream& stream = std::cout) {
     stream << "\033[" << i << "B";
   }
 
