@@ -258,10 +258,10 @@ class Backend {
       int len = r.findex.size()-1;
       if (len >= 1) {
         for (; len>0; len--) {
-          std::cout << r.findex[len] << ",";
+          std::cout << (int)r.findex[len] << ",";
         }
       }
-      std::cout << r.findex[len] << "}\n";
+      std::cout << (int)r.findex[len] << "}\n";
     }
   }
   /* }}} */

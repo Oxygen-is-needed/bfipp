@@ -13,17 +13,16 @@ namespace Frontend_Utils {
     fflush(stdout);
   }
 
-  // TODO: make easier
   std::string ic_default[3] = {
-    "\033[" STR(M_BLUE) "m",
-    "\033[" STR(M_YELLOW) "m",
-    "\033[" STR(M_RESET) "m",
+      "\033[" STR(M_BLUE) "m",    ///< First Parenthesis
+      "\033[" STR(M_YELLOW) "m",  ///< Parenthesis content
+      "\033[" STR(M_RESET) "m",   ///< End Parenthesis
   };
 
   std::string ic_none[3] = {"", "", ""};
 
-  unsigned int inspect_buffer(VM &vm, ssize_t mwidth = 100, int view_frame = 14,
-                              std::ostream &os = std::cout,
+  unsigned int inspect_buffer(VM& vm, ssize_t mwidth = 100, int view_frame = 14,
+                              std::ostream& os = std::cout,
                               std::string (&ic)[3] = ic_default) {
 
     if (mwidth == -1) {
@@ -306,7 +305,6 @@ namespace SimpleGraphicalFrontend {
     }
 
     {
-      // TODO: move to graphics file
       const static float rate = 60.0;
 
       static bool is_auto = false;
@@ -383,6 +381,13 @@ namespace Frontend {
     const std::string_view name;
     void (*const func)(VM&);
   };
+
+  const char* name[] = {
+#define X(A,B,...)  STR(A),
+    CONFIG
+#undef  X
+  };
+
   const struct Functions functions[] = {
 #define X(A,B,...)  { .name = STR(A) , .func = B },
     CONFIG

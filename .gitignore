@@ -6,3 +6,5 @@ build/*
 .cache*
 test*
 *.o
+**.clang-format
+**.cache**

@@ -114,13 +114,18 @@ namespace Args {
     return true;
   }
 
-  void list_frontends(Log::O& v) {
-    const std::string_view description[] = {
-#define X(A,B,C,D,...)  D,
-      FRONTEND_CONFIG
+  const bool is_graphical[] = {
+#define X(A,B,C,D,E,...)  D,
+    FRONTEND_CONFIG
 #undef  X
-    };
+  };
+  const char* description[] = {
+#define X(A,B,C,D,E,...)  E,
+    FRONTEND_CONFIG
+#undef  X
+  };
 
+  void list_frontends(Log::O& v) {
     Log::print(v, "Listing available frontends.\n\tNOTE: case does not "
                         "matter when choosing one.");
 
@@ -128,12 +133,8 @@ namespace Args {
     for (int x=0; x<FRONTEND_LENGTH; x++) {
       if (Frontend::functions[x].func == nullptr)
         continue;
-      if (!description[x].empty()) {
-        std::println(v.fd, "\t{:2}| {:16} - {}", x+1, Frontend::functions[x].name, description[x]);
-        continue;
-      }
-
-      std::println(v.fd, "\t{:2}| {:16}", x+1, Frontend::functions[x].name);
+      std::println(v.fd, "\t{:2}| {:16} - {}", x + 1,
+                   Frontend::functions[x].name, description[x]);
     }
   }
 
@@ -243,8 +244,8 @@ namespace Args {
           return ERROR;
         }
 
-        // TODO: check if already changed
-        output = Output::RAW;
+        if (output == Output::__NONE__)
+          output = Output::RAW;
         output_file = arg;
         break;
 
@@ -317,7 +318,6 @@ namespace Args {
 namespace Graphical {
 #ifndef DISABLE_GRAPHICS
   bool cleanup = true;
-  bool end = false;
   void warningPopup(Graphics::Main_Function& mf) {
     static int popup = true;
     if (popup == true) {
@@ -331,16 +331,37 @@ namespace Graphical {
           "For the documentation for this program please visit:");
       ImGui::TextLinkOpenURL("https://github.com/Oxygen-is-needed/bfipp", NULL);
 
+      ImGui::Dummy(ImVec2(0.0f, 20.0f));
       if (Graphics::centerButton("Ok")) {
-        Graphics::kill_me = true;
-        end = true;
+        exit(1);
+      }
+      ImGui::Dummy(ImVec2(0.0f, 20.0f));
+
+      static int selected = 2;
+      if (ImGui::BeginListBox("##")) {
+        for (int x=0; x<FRONTEND_LENGTH; x++) {
+          const bool is_selected = (selected == x);
+          if (ImGui::Selectable(Frontend::name[x], is_selected)) {
+            selected = x;
+          }
+
+          if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+            ImGui::SetTooltip(Args::description[x]);
+          }
+
+          if (is_selected) {
+            ImGui::SetItemDefaultFocus();
+          }
+        }
+        ImGui::EndListBox();
       }
 
-      if (Graphics::centerButton("Run G")) {
-        Args::parse(Args::Keys::frontend, (char*)"3");
+      if (Graphics::centerButton("Run")) {
+        Args::check_frontend(selected);
         Args::parse(Args::Keys::input, nullptr);
         mf.e = false;
-        cleanup = false;
+        if (Args::is_graphical[selected] == true)
+          cleanup = false;
         Graphics::kill_me = true;
       }
 
@@ -361,11 +382,6 @@ namespace Graphical {
 
     // Cleanup
     Graphics::End::end();
-
-    // TODO: investigate better method
-    if (end == true) {
-      exit(0);
-    }
   }
 
   void menu() {

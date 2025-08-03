@@ -56,7 +56,7 @@
   X('f', ':', ' ', file,        required_argument, "file: Input file.")\
   X('i', ':', ':', input,       required_argument, "[txt]: Input text." NL "Default with no arguments." NL "Use '-' for reading from stdin.")\
   X('r', ' ', ' ', run,         no_argument, "Run input imediatly, using no frontend.")\
-  X('V', ' ', ' ', verbose,     no_argument, "Enable verbose output.")\
+  X('V', ' ', ' ', verbose,     no_argument, "Enable verbose output. Default: Max")\
   X('v', ' ', ' ', version,     no_argument, "Print version")\
   X('l', ' ', ' ', listFronts,  no_argument, "List all available frontends.")\
   X('F', ':', ':', frontend,    optional_argument, "Change the frontend used to render." NL "Use no arguments to list frontends.")\
@@ -76,22 +76,21 @@
  * context: Fields 3, frontend help print function can be ignored if `nullptr`
  *  is placed there instead.
  *
- * context: Field 4, frontend description, can be ignore if replaced with `""`
- *  (or an empty string).
- *
- * Defines the parts needed to use a frontend. They break down into four
+ * Defines the parts needed to use a frontend. They break down into five
  * arguments in the macro X:
  *  1) Name and enum of the Frontend.
- *  2) Frontend macro, used to execute the frontend.
- *  3) Frontend help macro, used to print the keybindings.
- *  4) Frontend description.
+ *  2) Frontend function, used to execute the frontend.
+ *  3) Frontend help function, used to print the keybindings.
+ *  4) Is frontend graphical
+ *  5) Frontend description.
  */
-#define FRONTEND_CONFIG                                                        \
-  X(NONE, None::frontend, nullptr, "Just run and print program output.")       \
-  X(SIMPLE_TEXT, SimpleTextFrontend::frontend, SimpleTextFrontend::help,       \
-    "A simple terminal frontend.")                                             \
-  X(SIMPLE_GRAPHICS, SimpleGraphicalFrontend::frontend, nullptr,               \
-    "A simple graphical frontend, utilizing ImGui.")
+#define FRONTEND_CONFIG                                                  \
+  X(NONE, None::frontend, nullptr, false,                                \
+    "Just run and print program output.")                                \
+  X(SIMPLE_TEXT, SimpleTextFrontend::frontend, SimpleTextFrontend::help, \
+    false, "A simple terminal frontend.")                                 \
+  X(SIMPLE_GRAPHICS, SimpleGraphicalFrontend::frontend, nullptr,         \
+    true, "A simple graphical frontend, utilizing ImGui.")
 
 /**
  * define FRONTEND_DESCRIPTION__SIMPLE_TEXT - Description for SIMPLE_TEXT
@@ -117,7 +116,15 @@
   X(INSTRUCTION,  'i', "instruciton: Wati till defined instruction charactor.")        \
   X(CLEAR,        'c', "Clear output.")
 
-// TODO: add comment
+/**
+ * define OUTPUT_CONFIG - Configerations for outputs.
+ *
+ * Defines the parts needed to use a output method. They break down into three
+ * arguments in the macro X:
+ *  1) Name and enum of the Output.
+ *  2) Output function, used to run the output method.
+ *  3) Output Description.
+ */
 #define OUTPUT_CONFIG \
   X(RAW, RawOut::output, "Export a raw code executable.")
 

@@ -4,6 +4,10 @@
 // Unwinding {{{
 namespace Unwind {
   namespace {
+    Log::O verbose = {
+      .v = 2,
+    };
+
     struct Unwind {
       void (*fptr)();
       std::string name;
@@ -12,14 +16,20 @@ namespace Unwind {
     bool unwind_b=false;
   }
 
-  // TODO: add overload to search and delete based on function pointer
+  void pop_unwind(void (*fptr)()) {
+    for (int x=0; x<static_cast<int>(unwind_vector.size());) {
+      if (unwind_vector[x].fptr == fptr) {
+        Log::print(verbose, "Popping: ", unwind_vector[x].name);
+        unwind_vector.erase(unwind_vector.begin() + x);
+        continue;
+      }
+      ++x;
+    }
+  }
   void pop_unwind() {
     unwind_vector.erase(--unwind_vector.end());
   }
   namespace {
-    Log::O verbose = {
-      .v = 1,
-    };
     void run_unwind() {
       if (unwind_vector.empty() == true || unwind_b == true) {
         return;

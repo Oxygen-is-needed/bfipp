@@ -158,14 +158,31 @@
     - [x] Add frontend function format (eg what input variable)
 
 
-- [ ] Wrap Up
+- [x] Wrap Up
     - [x] Support for Windows Compilation
     - [x] Add release compilation
+    - [x] Update README.md
+    - [x] Update Program Usage
+    - [x] Detect Unused Code
+    - [x] Look at TODO's
+    - [ ] use `clang-format`
+    - [ ] Update Version Number
+
+
+# v1.3.0 - Graphical Update
+
+- [ ] Main
+- [ ] Frontend
+- [ ] General
+    - [ ] Better method than bool array for `is_graphical
+
+- [ ] Wrap Up
+    - [ ] Update release
     - [ ] Update README.md
-    - [ ] Update Program Usage
     - [ ] Detect Unused Code
     - [ ] Look at TODO's
     - [ ] Update Version Number
+
 
 # Ideas
 
