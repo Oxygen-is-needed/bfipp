@@ -34,39 +34,10 @@ if (STATIC_BUILD)
         set(BUILD_SHARED_LIBS OFF)
 endif()
 
-# raygui {{{
-include(FetchContent)
-
-function(add_git_dependency libName gitURL gitTag)
-    FetchContent_Declare(${libName}
-        GIT_REPOSITORY ${gitURL}
-        GIT_TAG        ${gitTag}
-        GIT_SHALLOW    TRUE
-        GIT_PROGRESS   TRUE
-    )
-    FetchContent_MakeAvailable(${libName})
-    target_compile_options(${libName} PRIVATE "-w")
-endfunction()
-
-set(BUILD_RAYGUI_EXAMPLES OFF CACHE BOOL "" FORCE)
-FetchContent_Declare(raygui
-    GIT_REPOSITORY https://github.com/raysan5/raygui.git
-    GIT_TAG        4.0
-    GIT_SHALLOW    TRUE
-    GIT_PROGRESS   TRUE
-)
-FetchContent_GetProperties(raygui)
-if(NOT raygui_POPULATED)
-    FetchContent_MakeAvailable(raygui)
-    add_subdirectory(${raygui_SOURCE_DIR}/projects/CMake raygui)
-    target_compile_options(raygui INTERFACE "-w")
-endif()
-# }}}
-
 add_executable(bfi++ ${CMAKE_SOURCE_DIR}/main.cpp)
 install(TARGETS bfi++ DESTINATION bin)
 
-target_link_libraries(bfi++ PRIVATE raygui raylib)
+target_link_libraries(bfi++ PRIVATE)
 
 
 # Windows Stuff
