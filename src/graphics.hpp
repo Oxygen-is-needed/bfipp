@@ -3,6 +3,7 @@
 #ifndef DISABLE_GRAPHICS
 
 #include "imgui.h"
+#include "misc/cpp/imgui_stdlib.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #define GL_SILENCE_DEPRECATION

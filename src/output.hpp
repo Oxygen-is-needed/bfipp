@@ -59,6 +59,12 @@ namespace Output {
 #undef X
   };
 
+  const char* name[] = {
+#define X(A, B, ...) STR(A),
+      OUTPUT_CONFIG
+#undef X
+  };
+
   struct Functions {
     const std::string_view name;
     void (*const func)(struct Context);

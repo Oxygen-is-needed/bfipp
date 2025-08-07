@@ -10,6 +10,8 @@
 #define COUNT(...) (sizeof((int[]){__VA_ARGS__}) / sizeof(int))
 const int __frontend_config_len = COUNT(FRONTEND_CONFIG);
 #define FRONTEND_LENGTH __frontend_config_len
+const int __output_config_len = COUNT(OUTPUT_CONFIG);
+#define OUTPUT_LENGTH __output_config_len
 #undef COUNT
 #undef X
 

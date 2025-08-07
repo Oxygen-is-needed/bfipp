@@ -6,7 +6,7 @@ CXX=g++
 WARNINGS='-Wall -Wformat -Wextra'
 FLAGS=
 
-MAIN_MACROS=-DVERSION="\"v1.2.0-pre\""
+MAIN_MACROS="-DVERSION=\"v1.3.0-pre\" -DCXX=\"$CXX\""
 MAIN_DIR="src"
 MAIN_IN="$MAIN_DIR/main.cpp"
 MAIN_OUT="$MAIN_DIR/main.o"
@@ -42,7 +42,8 @@ if [ -n "$WINDOWS" ]; then
 	INCLUDE_DIR=include/win
 fi
 
-if [ -n "RELEASE" ]; then
+if [ -n "$RELEASE" ]; then
+	clang-format --dry-run -Werror src/{*.hpp,*.h,*.cpp}
 	FLAGS+="-O3"
 fi
 
@@ -59,6 +60,7 @@ if [ $MAIN_UPDATE -eq 1 ]; then # If main update is needed
 	fi
 fi
 
+mkdir $OUT_DIR 2>/dev/null
 OUT=$OUT_DIR/$OUT_FILE
 $CXX -o $OUT $MAIN_OUT \
 	$INCLUDE_DIR/imgui.o \
@@ -67,5 +69,6 @@ $CXX -o $OUT $MAIN_OUT \
 	$INCLUDE_DIR/imgui_widgets.o \
 	$INCLUDE_DIR/imgui_impl_glfw.o \
 	$INCLUDE_DIR/imgui_impl_opengl3.o \
+	$INCLUDE_DIR/imgui_stdlib.o \
 	-I imgui -I imgui/backends \
 	-std=c++23 $WARNINGS $LIBS

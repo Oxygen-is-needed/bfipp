@@ -261,8 +261,17 @@ namespace SimpleGraphicalFrontend {
     }
   }
 
+  static void output() {
+    ImGui::BeginChild("Output", ImVec2(0, 0), ImGuiChildFlags_NavFlattened,
+                      ImGuiWindowFlags_HorizontalScrollbar);
+    ImGui::TextUnformatted(local_vm->output.c_str());
+    ImGui::SetScrollHereY(1.0f);
+    ImGui::EndChild();
+  }
+
   void graphical_loop(Graphics::Main_Function&) {
-    ImGui::Begin("Hello, world!", nullptr, ImGuiWindowFlags_MenuBar);
+    ImGui::Begin("Simple Graphical Frontend", nullptr,
+                 ImGuiWindowFlags_MenuBar);
 
     menu();
 
@@ -276,7 +285,7 @@ namespace SimpleGraphicalFrontend {
     ImGui::TextUnformatted(buf.c_str());
 
     if (done == true) {
-      ImGui::TextUnformatted(local_vm->output.c_str());
+      output();
       ImGui::End();
       return;
     }
@@ -322,7 +331,8 @@ namespace SimpleGraphicalFrontend {
         ImGui::SetTooltip("Amount of step progressions per second.");
       }
 
-      ImGui::SliderInt("Step Size", &step_mult, 1, 10);
+      ImGui::SliderInt("Step Size", &step_mult, 1, 10000, "%d",
+                       ImGuiSliderFlags_Logarithmic);
       if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
         ImGui::SetTooltip("Amount of steps taken per increment.");
       }
@@ -339,7 +349,8 @@ namespace SimpleGraphicalFrontend {
     }
 
     ImGui::Text("Steps: %d", local_vm->total_steps);
-    ImGui::Text("Output:\n%s", local_vm->output.c_str());
+    output();
+
     ImGui::End();
   }
 

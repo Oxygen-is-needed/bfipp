@@ -171,13 +171,18 @@
 # v1.3.0 - Graphical Update
 
 - [ ] Main
-    - [ ] `-N` | `--no-gui` argument to hard set graphics disabled.
+    - [x] `-N` | `--noGui` argument to hard set graphics disabled.
     - [ ] Graphical menu
-        - [ ] help text
-        - [ ] show version
-        - [ ] select input type and handle it
-        - [ ] select output
-        - [ ] output as file only
+        - [x] help text
+        - [x] show version
+        - [x] select Text input
+        - [x] select File input
+        - [x] select output method
+        - [x] output file name
+        - [x] check if file exists
+        - [ ] list possible files ending with `.b` and/or in `examples/`
+        - [x] output as file only
+    - [ ] Find where random two newlines come from
 
 - [ ] Frontend
     - [ ] <new> Graphical frontend
@@ -186,7 +191,8 @@
     - [ ] Simple Text
         - Run till spicific amount of steps.
     - [ ] Simple Graphical
-        - [ ] feature parity about, with simple text
+        - [ ] Feature parity about, with simple text
+        - [ ] Create help output
 
 - [ ] General
     - [ ] Better method than bool array for `is_graphical

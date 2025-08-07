@@ -39,17 +39,17 @@ namespace Args {
 #undef X
     };
 
-    void frontend_help(std::ostream& s) {
-      void (*const funcs[])(std::ostream& s) = {
+    void (*const help_funcs[])(std::ostream& s) = {
 #define X(A, B, C, ...) C,
-          FRONTEND_CONFIG
+        FRONTEND_CONFIG
 #undef X
-      };
+    };
 
+    void frontend_help(std::ostream& s) {
       for (int x = 0; x < FRONTEND_LENGTH; x++) {
-        if (funcs[x] == nullptr)
+        if (help_funcs[x] == nullptr)
           continue;
-        funcs[x](s);
+        help_funcs[x](s);
       }
     }
 
@@ -83,8 +83,8 @@ namespace Args {
   // }}}
 
   void print_version(std::ostream& s = std::cout) {
-    s << "bfi++ " << VERSION << " (" << __DATE__ << ", " << __TIME__ << ") ["
-      << STR(CC) << " " << __VERSION__ << "]" << std::endl;
+    s << "bfi++ " VERSION " (" __DATE__ ", " __TIME__ ") [" CXX " " __VERSION__
+      << "]" << std::endl;
   }
 
   enum Get_Status {
@@ -93,9 +93,14 @@ namespace Args {
     TEXT,   ///< Get input from text.
     HELLO,  ///< Use default hello world text.
   };
+  enum Graphics_Status {
+    GS_NONE,
+    GS_ENABLED,
+    GS_DISABLED,
+  };
 
   bool frontend_run = true;
-  bool graphical = false;
+  enum Graphics_Status graphical = GS_NONE;
   enum Frontend::Frontend_Index frontend = Frontend::SIMPLE_TEXT;
   enum Get_Status gstat = NONE;
   enum Output::Method output = Output::__NONE__;
@@ -146,6 +151,10 @@ namespace Args {
 
   bool check_frontend(int num) {
     if (Frontend::functions[num].func == nullptr) {
+      return false;
+    }
+    if (graphical == GS_DISABLED && is_graphical[num] == true) {
+      Log::print(error, "Invalid frontend, graphics are disabled.");
       return false;
     }
 
@@ -211,7 +220,7 @@ namespace Args {
         }
         gstat = TEXT;
         text = arg;
-        if (text == "-") {
+        if (text == "-" && graphical == false) {
           Log::print(v, "Reading from stdin for input");
           std::cin >> text;
           break;
@@ -261,7 +270,14 @@ namespace Args {
         Log::print(v, "Enabled Verbose");
         break;
       case Keys::gui:
-        graphical = true;
+        if (graphical == GS_DISABLED) {
+          Log::print(error, "Graphics are disabled.");
+          return ERROR;
+        }
+        graphical = GS_ENABLED;
+        break;
+      case Keys::noGui:
+        graphical = GS_DISABLED;
         break;
       case -1:
         Log::print(e, "Unknown Option");
@@ -273,7 +289,7 @@ namespace Args {
   void arguments(int argc, char* argv[]) {
 
     if (Utils::inTerminal() != true) {
-      graphical = true;
+      graphical = GS_ENABLED;
     }
 
     int opt = 0;
@@ -323,65 +339,241 @@ namespace Args {
 // Graphical {{{
 namespace Graphical {
 #ifndef DISABLE_GRAPHICS
+#define MENU_POPUP_NAME "Menu"
   bool cleanup = true;
-  void warningPopup(Graphics::Main_Function& mf) {
-    static int popup = true;
-    if (popup == true) {
-      ImGui::OpenPopup("Warning!");
-      popup = false;
+  bool help_window = false;
+  static void menuHelpWindow() {
+    if (help_window == false)
+      return;
+    ImGui::Begin("Help", &help_window, ImGuiWindowFlags_AlwaysAutoResize);
+
+    static bool got_help_text = false;
+    static std::string help_text = "";
+    static std::vector<std::string> help_text_per;
+    static std::vector<const char**> help_text_name;
+    if (got_help_text == false) {
+      std::stringstream ss;
+      Args::exec_help(ss);
+      help_text = ss.str();
+
+      for (int x = 0; x < FRONTEND_LENGTH; x++) {
+        if (Args::help_funcs[x] == nullptr)
+          continue;
+        ss.str(std::string());  // Clear String Stream
+        Args::help_funcs[x](ss);
+        help_text_per.push_back(ss.str());
+        help_text_name.push_back(&Frontend::name[x]);
+      }
+
+      got_help_text = true;
     }
 
-    if (ImGui::BeginPopupModal("Warning!")) {
-      ImGui::Text("This is currently not a graphical application.\n");
-      ImGui::TextWrapped(
-          "This program should be used in the terminal."
-          "For the documentation for this program please visit:");
-      ImGui::TextLinkOpenURL("https://github.com/Oxygen-is-needed/bfipp", NULL);
+    // Help Terminal Flags
+    if (ImGui::CollapsingHeader("Terminal Flags",
+                                ImGuiTreeNodeFlags_DefaultOpen))
+      ImGui::TextUnformatted(help_text.c_str());
 
-      ImGui::Dummy(ImVec2(0.0f, 20.0f));
-      if (Graphics::centerButton("Ok")) {
+    // Frontend Specific Help
+    for (size_t x = 0; x < help_text_name.size(); x++) {
+      if (ImGui::CollapsingHeader(*help_text_name[x])) {
+        ImGui::TextUnformatted(help_text_per[x].c_str());
+      }
+    }
+
+    ImGui::End();
+  }
+
+  static void menuMenu() {
+    if (!ImGui::BeginMenuBar())
+      return;
+
+    if (ImGui::BeginMenu("Main")) {
+      if (ImGui::MenuItem("Help")) {
+        help_window = true;
+      }
+      if (ImGui::MenuItem("Quit"))
         exit(1);
-      }
-      ImGui::Dummy(ImVec2(0.0f, 20.0f));
+      ImGui::EndMenu();
+    }
 
-      static int selected = 2;
-      if (ImGui::BeginListBox("##")) {
-        for (int x = 0; x < FRONTEND_LENGTH; x++) {
-          const bool is_selected = (selected == x);
-          if (ImGui::Selectable(Frontend::name[x], is_selected)) {
-            selected = x;
-          }
+    ImGui::EndMenuBar();
+  }
 
-          if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
-            ImGui::SetTooltip(Args::description[x]);
-          }
+  static void menuInputs(int& selected, int& input_select) {
+    const char* input_status[3] = {"File", "Text", "Hello"};
+    const char* input_status_description[3] = {
+        "Get data from a file.",
+        "Get data from the input text.",
+        "Use the default Hello World Example.",
+    };
+    const char* preview = input_status[input_select];
 
-          if (is_selected) {
-            ImGui::SetItemDefaultFocus();
-          }
+    if (ImGui::BeginCombo("##input_combo", preview)) {
+      for (int x = 0; x < 3; x++) {
+        const bool is_selected = (input_select == x);
+        if (ImGui::Selectable(input_status[x], is_selected)) {
+          input_select = x;
         }
-        ImGui::EndListBox();
-      }
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+          ImGui::SetTooltip(input_status_description[x]);
+        }
 
-      if (Graphics::centerButton("Run")) {
+        // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+        if (is_selected)
+          ImGui::SetItemDefaultFocus();
+      }
+      ImGui::EndCombo();
+    }
+
+    static std::string buf{"file.bf"};
+    switch (input_select) {
+      case 0:  // From File
+        ImGui::InputText("Input File", &Args::text);
+        Args::gstat = Args::FILE;
+        break;
+
+      case 1:  // From Input
+        ImGui::InputTextMultiline(
+            "Input Text", &Args::text,
+            ImVec2(-FLT_MIN, ImGui::GetTextLineHeight() * 16));
+        Args::gstat = Args::TEXT;
+        break;
+
+      case 2:  // Use Default Hello World
+        Args::gstat = Args::HELLO;
+        break;
+    }
+
+    if (ImGui::BeginListBox("##input_list")) {
+      for (int x = 0; x < FRONTEND_LENGTH; x++) {
+        const bool is_selected = (selected == x);
+        if (ImGui::Selectable(Frontend::name[x], is_selected)) {
+          selected = x;
+        }
+
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+          ImGui::SetTooltip(Args::description[x]);
+        }
+
+        if (is_selected) {
+          ImGui::SetItemDefaultFocus();
+        }
+      }
+      ImGui::EndListBox();
+    }
+  }
+
+  static void menuOutputs(int& selected) {
+    const char* preview = Output::name[selected];
+
+    if (ImGui::BeginCombo("##output_combo", preview)) {
+      for (int n = 0; n < OUTPUT_LENGTH; n++) {
+        const bool is_selected = (selected == n);
+        if (ImGui::Selectable(Output::name[n], is_selected))
+          selected = n;
+
+        // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+        if (is_selected)
+          ImGui::SetItemDefaultFocus();
+      }
+      ImGui::EndCombo();
+    }
+
+    static std::string buf{"file.bf"};
+    ImGui::InputText("Output File", &buf);
+    Args::output_file = buf;
+  }
+
+  void menuPopup(Graphics::Main_Function& mf) {
+    static bool popup = true;
+    static int input_select = 2;
+    static int selected = 0;
+    static std::string version = "";
+    static unsigned int error = 0;
+
+    if (popup == true) {
+      ImGui::OpenPopup(MENU_POPUP_NAME);
+      popup = false;
+
+      std::stringstream ss;
+      Args::print_version(ss);
+      version = ss.str();
+    }
+
+    if (!ImGui::BeginPopupModal(MENU_POPUP_NAME, nullptr,
+                                ImGuiWindowFlags_NoResize |
+                                    ImGuiWindowFlags_NoMove |
+                                    ImGuiWindowFlags_MenuBar)) {
+      return;
+    }
+    menuMenu();
+    ImGui::Dummy(ImVec2(0.0f, 20.0f));
+
+    menuHelpWindow();
+
+    ImGui::Checkbox("Enable Frontend", &Args::frontend_run);
+    if (Args::frontend_run == true) {
+      menuInputs(selected, input_select);
+    }
+
+    static bool output = false;
+    ImGui::Checkbox("Enable Output", &output);
+    if (output == true) {
+      menuOutputs(selected);
+    }
+
+    if (Graphics::centerButton("Run")) {
+      if (input_select == 0 && !std::filesystem::exists(Args::text)) {
+        error = 1;  // File not found
+      } else {
         Args::check_frontend(selected);
-        Args::parse(Args::Keys::input, nullptr);
-        mf.e = false;
+        if (Args::gstat == Args::NONE)
+          Args::parse(Args::Keys::input, nullptr);
+        mf.e = false;  // Stop running this function
         if (Args::is_graphical[selected] == true)
           cleanup = false;
         Graphics::kill_me = true;
       }
-
-      ImGui::EndPopup();
     }
+
+    static const char* errors[] = {"Error: File does not exist."};
+    if (error != 0) {
+      ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
+      ImGui::TextWrapped(errors[error - 1]);
+      ImGui::PopStyleColor();
+    }
+
+    /* Footer */
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() +
+                         ImGui::GetContentRegionAvail().y - 175);
+    ImGui::TextWrapped(
+        "bfi++ is a brainf*** interpreter and virtual machine designed "
+        "for "
+        "adaptability and extensibility, offering multiple frontends to "
+        "visualize memory and code execution. For program documentation "
+        "please visit:");
+    ImGui::TextLinkOpenURL("https://github.com/Oxygen-is-needed/bfipp",
+                           nullptr);
+
+    ImGui::Dummy(ImVec2(0.0f, 20.0f));
+    if (Graphics::centerButton("Exit")) {
+      exit(1);
+    }
+    ImGui::Dummy(ImVec2(0.0f, 35.0f));
+    ImGui::TextDisabled(version.c_str());
+
+    ImGui::EndPopup();
   }
 
-  void run() {
+  void menu() {
+
     // Setup
     if (Graphics::setup() != true)
       return;
 
     // Main loop
+    Graphics::mainFuncAdd(menuPopup);
     while (Graphics::main() == true) {}
     if (cleanup == false) {
       return;
@@ -389,11 +581,6 @@ namespace Graphical {
 
     // Cleanup
     Graphics::End::end();
-  }
-
-  void menu() {
-    Graphics::mainFuncAdd(warningPopup);
-    run();
   }
 #else
   void menu() {
@@ -406,7 +593,7 @@ namespace Graphical {
 int main(int argc, char* argv[]) {
   Unwind::initalize_unwind();
   Args::arguments(argc, argv);
-  if (Args::graphical == true) {
+  if (Args::graphical == Args::GS_ENABLED) {
     Graphical::menu();
   }
 
