@@ -99,7 +99,9 @@
   X(SIMPLE_TEXT, SimpleTextFrontend::frontend, SimpleTextFrontend::help, \
     false, "A simple terminal frontend.")                                \
   X(SIMPLE_GRAPHICS, SimpleGraphicalFrontend::frontend, nullptr, true,   \
-    "A simple graphical frontend, utilizing ImGui.")
+    "A simple graphical frontend.")                                      \
+  X(GRAPHICS, GraphicalFrontend::frontend, nullptr, true,                \
+    "A graphical frontend.")
 
 /**
  * define FRONTEND_DESCRIPTION__SIMPLE_TEXT - Description for SIMPLE_TEXT
@@ -122,7 +124,7 @@
   X(RUN, 'r', "Run entire program without user input.")                        \
   X(SKIP, 's', "num: Skip a defined amount each step.")                        \
   X(WAIT, 'w', "num: Wait till defined instruction counter.")                  \
-  X(INSTRUCTION, 'i', "instruciton: Wati till defined instruction charactor.") \
+  X(INSTRUCTION, 'i', "instruciton: Wait till defined instruction charactor.") \
   X(CLEAR, 'c', "Clear output.")
 
 /**

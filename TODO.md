@@ -170,9 +170,9 @@
 
 # v1.3.0 - Graphical Update
 
-- [ ] Main
+- [x] Main
     - [x] `-N` | `--noGui` argument to hard set graphics disabled.
-    - [ ] Graphical menu
+    - [x] Graphical menu
         - [x] help text
         - [x] show version
         - [x] select Text input
@@ -180,16 +180,22 @@
         - [x] select output method
         - [x] output file name
         - [x] check if file exists
-        - [ ] list possible files ending with `.b` and/or in `examples/`
+        - [x] list possible files ending with `.b` and/or in `examples/`
         - [x] output as file only
-    - [ ] Find where random two newlines come from
 
 - [ ] Frontend
     - [ ] <new> Graphical frontend
+        - [ ] `inspect_instructions()` make pass custom function
+        - [ ] create insert graphical function
+        - [x] Buffer Grid
+        - [ ] Have grid expand if needed.
         - [ ] Buffer Heat map
-        - [ ] Current Instructions (with middle enlarged)
+        - [x] Current Instructions (with middle enlarged)
+        - [x] Color Border of middle instruction
+        - [x] Center Text of instructions
+        - [x] Center center instruction vertically
     - [ ] Simple Text
-        - Run till spicific amount of steps.
+        - [ ] Run till spicific amount of steps.
     - [ ] Simple Graphical
         - [ ] Feature parity about, with simple text
         - [ ] Create help output

@@ -399,6 +399,62 @@ namespace Graphical {
     ImGui::EndMenuBar();
   }
 
+  static bool appendFromDirectory(std::string file,
+                                  std::vector<std::string>& file_names) {
+    bool b = false;
+    for (const auto& entry : std::filesystem::directory_iterator(file)) {
+      const std::string e_str = entry.path().string();
+      if (e_str.ends_with(".b")) {
+        b = true;
+        file_names.push_back(e_str);
+      }
+    }
+    return b;
+  }
+
+  static void inputFileCombo() {
+    static unsigned int files = 0;
+    // 0) not initalized
+    // 1) files found
+    // 2) no files found
+    if (files == 2)
+      return;
+
+    static std::vector<std::string> file_names{""};
+    if (files == 0) {
+      // Search for files
+      bool t = false;
+      if (appendFromDirectory("./", file_names) == true) {
+        t = true;
+      }
+
+      if (std::filesystem::exists("./examples/") &&
+          appendFromDirectory("./examples/", file_names) == true) {
+        t = true;
+      }
+
+      if (t == true)
+        files = 1;
+    }
+
+    static int select = 0;
+    const char* preview = file_names[select].c_str();
+    if (ImGui::BeginCombo("##input_file_combo", preview)) {
+      for (int x = 1; x < (int)file_names.size(); x++) {
+        const bool is_selected = (select == x);
+        if (ImGui::Selectable(file_names[x].c_str(), is_selected)) {
+          Args::text = file_names[x];
+          select = x;
+        }
+
+        if (is_selected) {
+          ImGui::SetItemDefaultFocus();
+        }
+      }
+      ImGui::EndCombo();
+    }
+  }
+
   static void menuInputs(int& selected, int& input_select) {
     const char* input_status[3] = {"File", "Text", "Hello"};
     const char* input_status_description[3] = {
@@ -430,6 +486,7 @@ namespace Graphical {
       case 0:  // From File
         ImGui::InputText("Input File", &Args::text);
         Args::gstat = Args::FILE;
+        inputFileCombo();
         break;
 
       case 1:  // From Input

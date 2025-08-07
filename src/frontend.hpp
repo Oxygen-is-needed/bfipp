@@ -241,14 +241,6 @@ namespace SimpleGraphicalFrontend {
       ImGui::EndMenu();
     }
 
-    if (ImGui::BeginMenu("Options")) {
-      ImGui::EndMenu();
-    }
-
-    if (ImGui::BeginMenu("Info")) {
-      ImGui::EndMenu();
-    }
-
     ImGui::EndMenuBar();
   }
 
@@ -261,12 +253,16 @@ namespace SimpleGraphicalFrontend {
     }
   }
 
-  static void output() {
+  static void output(bool& t) {
     ImGui::BeginChild("Output", ImVec2(0, 0), ImGuiChildFlags_NavFlattened,
                       ImGuiWindowFlags_HorizontalScrollbar);
-    ImGui::TextUnformatted(local_vm->output.c_str());
-    ImGui::SetScrollHereY(1.0f);
+    ImGui::TextWrapped("%s", local_vm->output.c_str());
+    if (t == true)
+      ImGui::SetScrollHereY(1.0f);
     ImGui::EndChild();
+  }
+  static void output(bool&& t = true) {
+    output(t);
   }
 
   void graphical_loop(Graphics::Main_Function&) {
@@ -285,7 +281,7 @@ namespace SimpleGraphicalFrontend {
     ImGui::TextUnformatted(buf.c_str());
 
     if (done == true) {
-      output();
+      output(false);
       ImGui::End();
       return;
     }
@@ -349,12 +345,153 @@ namespace SimpleGraphicalFrontend {
     }
 
     ImGui::Text("Steps: %d", local_vm->total_steps);
-    output();
+    output(true);
 
     ImGui::End();
   }
 
   void help(/*std::ostream &s = std::cout*/) {}
+  void frontend(VM& vm) {
+    if (Graphics::setup() != true)
+      return;
+    local_vm = &vm;
+    Graphics::mainFuncAdd(graphical_loop);
+
+    while (Graphics::main() == true) {}
+
+    Graphics::End::end();
+    local_vm = nullptr;
+  }
+}
+// }}}
+// GraphicalFrontend {{{
+namespace GraphicalFrontend {
+  namespace {  // <anonymous>
+    VM* local_vm = nullptr;
+    bool done = false;
+  }
+
+  static void menu() {
+    if (!ImGui::BeginMenuBar())
+      return;
+
+    if (ImGui::BeginMenu("Main")) {
+      if (ImGui::MenuItem("quit"))
+        Graphics::kill_me = true;
+      ImGui::EndMenu();
+    }
+
+    ImGui::EndMenuBar();
+  }
+
+  // TODO: move to utils
+  static void glSteps(const int& mult) {
+    for (int x = 0; x < mult; x++) {
+      if (local_vm->step() != false)
+        continue;
+      done = true;
+      break;
+    }
+  }
+
+  void graphical_loop(Graphics::Main_Function&) {
+    ImGui::Begin("Graphical Frontend", nullptr, ImGuiWindowFlags_MenuBar);
+
+    menu();
+
+    if (done == true) {
+      ImGui::End();
+      return;
+    }
+
+    {
+      static int len = 5;
+      for (int y = 0, z = 0; y < len; y++) {
+        for (int x = 0; x < len; x++, z++) {
+          if (x > 0)
+            ImGui::SameLine();
+          ImGui::PushID((y * len + x) + 10);
+
+          int i = (*local_vm).buffer[z];
+          char buf[10]{};
+          if (i != 0)
+            std::to_chars(buf, buf + 10, i);
+          ImGui::Selectable(buf, i != 0, 0, ImVec2(25, 25));
+          ImGui::PopID();
+        }
+      }
+    }
+
+    static int n = 0;
+    if (n++ > 12) {
+      (*local_vm).step();
+      n = 0;
+    }
+
+    ImGui::Dummy(ImVec2(0.0f, 20.0f));
+    {
+      // TODO: make inspect_instruction call a function that accepts a function
+      // instaed, then use that function.
+      const unsigned int sub = 4;
+      const unsigned int cap = (*local_vm).ins_max;
+      unsigned int frame_len = 9;
+      unsigned int len = cap;
+      unsigned int pc = (*local_vm).ins_i;
+      unsigned int start;
+
+      if (len < frame_len)
+        frame_len = len;
+
+      if (pc <= sub)
+        start = 0;
+      else
+        start = pc - sub;
+
+      unsigned int end = start + frame_len;
+      if (end > cap)
+        end = cap;
+
+      ImGui::PushFont(NULL, 20.0f);
+      ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign,
+                          ImVec2(0.5f, 0.5f));
+      for (unsigned int x = start; x < end; x++) {
+        if (x != start)
+          ImGui::SameLine();
+        ImGui::PushID(x);
+
+        char buf[2]{' ', 0};
+        buf[0] = (*local_vm).code[x];
+        if ((*local_vm).ins_i == x) {
+          // Shift Selectable Posistion
+          ImVec2 pos = ImGui::GetCursorPos();
+          ImGui::SetCursorPos(ImVec2(pos.x, pos.y - 5.0f));
+
+          // Boarder Posistions
+          ImVec2 bpos = ImGui::GetCursorScreenPos();
+          ImVec2 size = ImVec2(35, 35);
+          ImVec2 bpos2 = ImVec2(bpos.x + size.x, bpos.y + size.y);
+          ImRect bb(bpos, bpos2);
+
+          ImGui::Selectable(buf, true, 0, size);
+
+          ImU32 border_color = IM_COL32(0, 0, 200, 255);
+          ImGui::GetWindowDrawList()->AddRect(bb.Min, bb.Max, border_color,
+                                              0.0f, 0, 5.0f);
+        } else {
+          ImGui::Selectable(buf, true, 0, ImVec2(25, 25));
+        }
+        ImGui::PopID();
+      }
+      ImGui::PopStyleVar();
+      ImGui::PopFont();
+    }
+
+    ImGui::End();
+  }
+
+  void help(/*std::ostream &s = std::cout*/) {}
+
+  // TODO: generalize into Utils*::Graphics::appendGraphicalFunction();
   void frontend(VM& vm) {
     if (Graphics::setup() != true)
       return;
