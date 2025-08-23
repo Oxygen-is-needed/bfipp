@@ -184,32 +184,53 @@
         - [x] output as file only
 
 - [ ] Frontend
-    - [ ] <new> Graphical frontend
-        - [ ] `inspect_instructions()` make pass custom function
-        - [ ] create insert graphical function
+    - [x] <new> Graphical frontend
         - [x] Buffer Grid
-        - [ ] Have grid expand if needed.
-        - [ ] Buffer Heat map
+        - [x] Buffer Heat map
         - [x] Current Instructions (with middle enlarged)
         - [x] Color Border of middle instruction
         - [x] Center Text of instructions
         - [x] Center center instruction vertically
-    - [ ] Simple Text
-        - [ ] Run till spicific amount of steps.
-    - [ ] Simple Graphical
-        - [ ] Feature parity about, with simple text
-        - [ ] Create help output
+    - [x] Simple Text
+        - [x] Run till spicific amount of steps.
+    - [x] Simple Graphical
+        - [x] Feature parity with simple text
+           - [x] RUN: run entire program
+           - [x] WAIT: wait till instruction index
+           - [x] INSTRUCTION: wait till defined instruction
+           - [x] ADVANCE: advance to step count
+           - [x] Hover descriptions
 
 - [ ] General
     - [ ] Better method than bool array for `is_graphical
 
 - [ ] Wrap Up
+    - [ ] Check for memory leaks
     - [ ] Update release
     - [ ] Update README.md
     - [ ] Detect Unused Code
     - [ ] Look at TODO's
     - [ ] Update Version Number
 
+# v1.4.0 - Improve Technicals
+
+- [ ] Frontend
+    - [ ] Have multiple graphics windows at once
+    - [ ] Get input for program
+    - [ ] Graphical frontend
+        - [ ] Have grid expand if needed.
+        - [ ] click open menu on what to do about instruction
+    - [ ] Simple Graphical frontend
+        - [ ] Clean up code
+    - [ ] Simple Text
+        - [ ] Modify Advance (+num) to add to pc
+    - [ ] Ability to Disable a backends
+    - [ ] Ability to Disable Graphics
+
+- [ ] Main
+    - [ ] Open menu after running.
+    - [ ] Have multiple methods running at once.
+    - [ ] Have backbone to support multiple graphical windows.
 
 # Ideas
 

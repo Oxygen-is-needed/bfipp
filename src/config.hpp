@@ -125,7 +125,8 @@
   X(SKIP, 's', "num: Skip a defined amount each step.")                        \
   X(WAIT, 'w', "num: Wait till defined instruction counter.")                  \
   X(INSTRUCTION, 'i', "instruciton: Wait till defined instruction charactor.") \
-  X(CLEAR, 'c', "Clear output.")
+  X(CLEAR, 'c', "Clear output.")                                               \
+  X(ADVANCE, 'a', "num: Advance to user defined step count.")
 
 /**
  * define OUTPUT_CONFIG - Configerations for outputs.

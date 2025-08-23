@@ -131,7 +131,8 @@ namespace SimpleTextFrontend {
     return static_cast<unsigned int>(std::stoul(input));
   }
   void keybindings(VM& vm, char& key, bool& ret, bool& ug, int& phelp,
-                   unsigned int& skip, unsigned int& wait, char& wi) {
+                   unsigned int& skip, unsigned int& wins, char& wi,
+                   unsigned int& wpc) {
     switch (key) {
       case QUIT:
         ret = false;
@@ -147,13 +148,16 @@ namespace SimpleTextFrontend {
         skip = get_int();
         return;
       case WAIT:
-        wait = get_int();
+        wins = get_int();
         return;
       case INSTRUCTION:
         wi = getchar();
         return;
       case CLEAR:
         vm.output.clear();
+        return;
+      case ADVANCE:
+        wpc = get_int();
         return;
     }
   }
@@ -166,7 +170,6 @@ namespace SimpleTextFrontend {
   }
 
   void frontend(VM& vm) {
-    out = vm.output;
 
     Frontend_Utils::inspect_buffer(vm);
     Frontend_Utils::inspect_instructions(vm);
@@ -177,13 +180,16 @@ namespace SimpleTextFrontend {
     int phelp = false;
     unsigned int skip = 0;
     unsigned int skip_i = 0;
-    unsigned int wait = 0;
+    unsigned int wins = 0;
+    unsigned int wpc = 0;
 
     C::hide_cursor();
     Unwind::add_unwind({unwind, "SimpleTextFrontend::unwind"});
     while (ret != false) {
+      std::println("{} {}", wpc, vm.total_steps);
+      // TODO: clean up if condition
       if (user_guided == true && skip_i++ >= skip &&
-          (wait == 0 || wait < vm.ins_i) &&
+          (wins == 0 || wins < vm.ins_i) && (wpc == 0 || wpc <= vm.total_steps) &&
           (wait_instruction == 0 ||
            (vm.ins_i < vm.ins_max && wait_instruction == vm.code[vm.ins_i]))) {
         skip_i = 0;
@@ -191,8 +197,8 @@ namespace SimpleTextFrontend {
         char in = getchar();
         std::string input;
 
-        keybindings(vm, in, ret, user_guided, phelp, skip, wait,
-                    wait_instruction);
+        keybindings(vm, in, ret, user_guided, phelp, skip, wins,
+                    wait_instruction, wpc);
         if (ret == false)
           continue;
 
@@ -231,6 +237,15 @@ namespace SimpleGraphicalFrontend {
     bool done = false;
   }
 
+  struct TextFilters {
+    static int filterNumerical(ImGuiInputTextCallbackData* data) {
+      if (data->EventChar >= '0' && data->EventChar <= '9') {
+        return 0;
+      }
+      return 1;
+    }
+  };
+
   static void menu() {
     if (!ImGui::BeginMenuBar())
       return;
@@ -265,17 +280,15 @@ namespace SimpleGraphicalFrontend {
     output(t);
   }
 
+  // TODO: split into multiple static functions
   void graphical_loop(Graphics::Main_Function&) {
+    ImGui::SetNextWindowSize(ImVec2(500, 750), ImGuiCond_FirstUseEver);
     ImGui::Begin("Simple Graphical Frontend", nullptr,
                  ImGuiWindowFlags_MenuBar);
 
     menu();
 
-    ImGui::Text("This is a proof of concept for A simple Graphical Frontend.");
-    ImGui::TextWrapped(
-        "It proves that setting the frontend then passing to the "
-        "graphical loop to the frontend can work.");
-    ImGui::Dummy(ImVec2(0.0f, 20.0f));
+    ImGui::Dummy(ImVec2(200.0f, 20.0f));
 
     static std::string buf = "";
     ImGui::TextUnformatted(buf.c_str());
@@ -344,13 +357,94 @@ namespace SimpleGraphicalFrontend {
       }
     }
 
+    {
+      if (ImGui::Button("Run")) {
+        while (local_vm->step() != false) {}
+        done = true;
+      }
+
+      if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+        ImGui::SetTooltip("Run entire program.");
+      }
+    }
+    {
+      static unsigned int error = 0;
+      static std::string goto_text;
+      ImGui::InputText("GOTO:", &goto_text);
+      if (ImGui::Button("Instruction Index")) {
+
+        try {
+          unsigned long t = stoul(goto_text);
+          if (t >= local_vm->ins_max)
+            t = local_vm->ins_max;
+
+          if (t > local_vm->ins_i) {
+            while (local_vm->ins_i < t) {
+              if (local_vm->step() == false) {
+                done = true;
+                break;
+              }
+            }
+          }
+        } catch (...) {
+          error = 60 * 5; // Five seconds
+        }
+      }
+      if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+        ImGui::SetTooltip("Move forward to specified instruction index.");
+      }
+
+      ImGui::SameLine();
+      if (ImGui::Button("Instruction")) {
+        if (!goto_text.empty() && !(goto_text[0] >= '0' && goto_text[0] <= '9')) {
+          std::cout << "TEST" << std::endl;
+          char gt = goto_text[0];
+          while (local_vm->code[local_vm->ins_i] != gt) {
+              if (local_vm->step() == false) {
+                done = true;
+                break;
+              }
+          }
+        }
+      }
+      if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+        ImGui::SetTooltip("Move forward to first specified instruction.");
+      }
+
+      ImGui::SameLine();
+      if (ImGui::Button("Step")) {
+        try {
+          unsigned long t = stoul(goto_text);
+          if (t > local_vm->total_steps) {
+            while (local_vm->total_steps < t) {
+              if (local_vm->step() == false) {
+                done = true;
+                break;
+              }
+            }
+          }
+        } catch (...) {
+          error = 60 * 5; // Five seconds
+        }
+      }
+      if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+        ImGui::SetTooltip("Move forward to specified step count.");
+      }
+
+      if (error != 0) {
+        error--;
+        ImGui::SameLine();
+        ImGui::Text("Invalid input format.");
+      }
+    }
+
     ImGui::Text("Steps: %d", local_vm->total_steps);
+    ImGui::Text("Instruction Index: %d", local_vm->ins_i);
     output(true);
 
     ImGui::End();
   }
 
-  void help(/*std::ostream &s = std::cout*/) {}
   void frontend(VM& vm) {
     if (Graphics::setup() != true)
       return;
@@ -369,6 +463,17 @@ namespace GraphicalFrontend {
   namespace {  // <anonymous>
     VM* local_vm = nullptr;
     bool done = false;
+    unsigned int* heat_map;
+  }
+
+  void destruct() {
+    delete[] heat_map;
+  }
+
+  static void advanceLocalVM() {
+    if (local_vm->step() == false)
+      done = true;
+    heat_map[local_vm->pc]++;
   }
 
   static void menu() {
@@ -384,14 +489,101 @@ namespace GraphicalFrontend {
     ImGui::EndMenuBar();
   }
 
-  // TODO: move to utils
-  static void glSteps(const int& mult) {
-    for (int x = 0; x < mult; x++) {
-      if (local_vm->step() != false)
-        continue;
-      done = true;
-      break;
+  static void bufferView() {
+    ImGui::Text("Buffer View:");
+
+    static int len = 5;
+    for (int y = 0, z = 0; y < len; y++) {
+      for (int x = 0; x < len; x++, z++) {
+        if (x > 0)
+          ImGui::SameLine();
+        ImGui::PushID((y * len + x) + 25);
+
+        int i = local_vm->buffer[z];
+        char buf[10]{};
+        if (i != 0)
+          std::to_chars(buf, buf + 10, i);
+        ImGui::Selectable(buf, i != 0, 0, ImVec2(25, 25));
+        ImGui::PopID();
+      }
     }
+  }
+
+  static void heatMapView() {
+    ImGui::Text("Buffer Access Heat Map:");
+
+    static int len = 5;
+    for (int y = 0, z = 0; y < len; y++) {
+      for (int x = 0; x < len; x++, z++) {
+        if (x > 0)
+          ImGui::SameLine();
+        ImGui::PushID((y * len + x) + 50);
+
+        int i = heat_map[z];
+        char buf[10]{};
+        if (i != 0)
+          std::to_chars(buf, buf + 10, i);
+        ImGui::Selectable(buf, true, 0, ImVec2(25, 25));
+        ImGui::PopID();
+      }
+    }
+  }
+
+  static void instructionView() {
+    ImGui::Text("Instruction List:");
+
+    // TODO: make inspect_instruction call a function that accepts a function
+    // instaed, then use that function.
+    const unsigned int sub = 4;
+    const unsigned int cap = local_vm->ins_max;
+    unsigned int frame_len = 9;
+    unsigned int len = cap;
+    unsigned int pc = local_vm->ins_i;
+    unsigned int start;
+
+    if (len < frame_len)
+      frame_len = len;
+
+    if (pc <= sub)
+      start = 0;
+    else
+      start = pc - sub;
+
+    unsigned int end = start + frame_len;
+    if (end > cap)
+      end = cap;
+
+    ImGui::PushFont(NULL, 20.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f, 0.5f));
+    for (unsigned int x = start; x < end; x++) {
+      if (x != start)
+        ImGui::SameLine();
+      ImGui::PushID(x);
+
+      char buf[2]{' ', 0};
+      buf[0] = local_vm->code[x];
+      if (local_vm->ins_i == x) {
+        // Shift Selectable Posistion
+        ImVec2 pos = ImGui::GetCursorPos();
+        ImGui::SetCursorPos(ImVec2(pos.x, pos.y - 5.0f));
+
+        // Boarder Posistions
+        ImVec2 bpos = ImGui::GetCursorScreenPos();
+        ImVec2 size = ImVec2(35, 35);
+        ImVec2 bpos2 = ImVec2(bpos.x + size.x, bpos.y + size.y);
+
+        ImGui::Selectable(buf, true, 0, size);
+
+        ImU32 border_color = IM_COL32(0, 0, 200, 255);
+        ImGui::GetWindowDrawList()->AddRect(bpos, bpos2, border_color, 0.0f, 0,
+                                            5.0f);
+      } else {
+        ImGui::Selectable(buf, true, 0, ImVec2(25, 25));
+      }
+      ImGui::PopID();
+    }
+    ImGui::PopStyleVar();
+    ImGui::PopFont();
   }
 
   void graphical_loop(Graphics::Main_Function&) {
@@ -399,104 +591,37 @@ namespace GraphicalFrontend {
 
     menu();
 
+    bufferView();
+    heatMapView();
+
     if (done == true) {
       ImGui::End();
       return;
     }
 
-    {
-      static int len = 5;
-      for (int y = 0, z = 0; y < len; y++) {
-        for (int x = 0; x < len; x++, z++) {
-          if (x > 0)
-            ImGui::SameLine();
-          ImGui::PushID((y * len + x) + 10);
-
-          int i = (*local_vm).buffer[z];
-          char buf[10]{};
-          if (i != 0)
-            std::to_chars(buf, buf + 10, i);
-          ImGui::Selectable(buf, i != 0, 0, ImVec2(25, 25));
-          ImGui::PopID();
-        }
-      }
-    }
-
     static int n = 0;
-    if (n++ > 12) {
-      (*local_vm).step();
+    if (n++ > 1) {
+      advanceLocalVM();
       n = 0;
     }
 
     ImGui::Dummy(ImVec2(0.0f, 20.0f));
-    {
-      // TODO: make inspect_instruction call a function that accepts a function
-      // instaed, then use that function.
-      const unsigned int sub = 4;
-      const unsigned int cap = (*local_vm).ins_max;
-      unsigned int frame_len = 9;
-      unsigned int len = cap;
-      unsigned int pc = (*local_vm).ins_i;
-      unsigned int start;
 
-      if (len < frame_len)
-        frame_len = len;
-
-      if (pc <= sub)
-        start = 0;
-      else
-        start = pc - sub;
-
-      unsigned int end = start + frame_len;
-      if (end > cap)
-        end = cap;
-
-      ImGui::PushFont(NULL, 20.0f);
-      ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign,
-                          ImVec2(0.5f, 0.5f));
-      for (unsigned int x = start; x < end; x++) {
-        if (x != start)
-          ImGui::SameLine();
-        ImGui::PushID(x);
-
-        char buf[2]{' ', 0};
-        buf[0] = (*local_vm).code[x];
-        if ((*local_vm).ins_i == x) {
-          // Shift Selectable Posistion
-          ImVec2 pos = ImGui::GetCursorPos();
-          ImGui::SetCursorPos(ImVec2(pos.x, pos.y - 5.0f));
-
-          // Boarder Posistions
-          ImVec2 bpos = ImGui::GetCursorScreenPos();
-          ImVec2 size = ImVec2(35, 35);
-          ImVec2 bpos2 = ImVec2(bpos.x + size.x, bpos.y + size.y);
-          ImRect bb(bpos, bpos2);
-
-          ImGui::Selectable(buf, true, 0, size);
-
-          ImU32 border_color = IM_COL32(0, 0, 200, 255);
-          ImGui::GetWindowDrawList()->AddRect(bb.Min, bb.Max, border_color,
-                                              0.0f, 0, 5.0f);
-        } else {
-          ImGui::Selectable(buf, true, 0, ImVec2(25, 25));
-        }
-        ImGui::PopID();
-      }
-      ImGui::PopStyleVar();
-      ImGui::PopFont();
-    }
+    instructionView();
 
     ImGui::End();
   }
 
-  void help(/*std::ostream &s = std::cout*/) {}
-
-  // TODO: generalize into Utils*::Graphics::appendGraphicalFunction();
   void frontend(VM& vm) {
     if (Graphics::setup() != true)
       return;
     local_vm = &vm;
     Graphics::mainFuncAdd(graphical_loop);
+
+    unsigned int len = vm.rules.tape_length;
+    heat_map = new unsigned int[len];
+    memset(heat_map, 0, len * sizeof(unsigned int));
+    Unwind::add_unwind({.fptr = destruct, .name = ""});
 
     while (Graphics::main() == true) {}
 

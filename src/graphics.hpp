@@ -15,6 +15,15 @@
 
 // Graphics {{{
 namespace Graphics {
+  struct TextFilters {
+    static int filterNumerical(ImGuiInputTextCallbackData* data) {
+      if (data->EventChar >= '0' && data->EventChar <= '9') {
+        return 0;
+      }
+      return 1;
+    }
+  };
+
   GLFWwindow* window = nullptr;
 
   struct Log::O g_error = {
