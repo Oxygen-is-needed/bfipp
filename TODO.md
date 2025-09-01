@@ -183,7 +183,7 @@
         - [x] list possible files ending with `.b` and/or in `examples/`
         - [x] output as file only
 
-- [ ] Frontend
+- [x] Frontend
     - [x] <new> Graphical frontend
         - [x] Buffer Grid
         - [x] Buffer Heat map
@@ -200,9 +200,6 @@
            - [x] INSTRUCTION: wait till defined instruction
            - [x] ADVANCE: advance to step count
            - [x] Hover descriptions
-
-- [ ] General
-    - [ ] Better method than bool array for `is_graphical
 
 - [ ] Wrap Up
     - [ ] Check for memory leaks

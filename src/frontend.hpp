@@ -189,7 +189,8 @@ namespace SimpleTextFrontend {
       std::println("{} {}", wpc, vm.total_steps);
       // TODO: clean up if condition
       if (user_guided == true && skip_i++ >= skip &&
-          (wins == 0 || wins < vm.ins_i) && (wpc == 0 || wpc <= vm.total_steps) &&
+          (wins == 0 || wins < vm.ins_i) &&
+          (wpc == 0 || wpc <= vm.total_steps) &&
           (wait_instruction == 0 ||
            (vm.ins_i < vm.ins_max && wait_instruction == vm.code[vm.ins_i]))) {
         skip_i = 0;
@@ -387,7 +388,7 @@ namespace SimpleGraphicalFrontend {
             }
           }
         } catch (...) {
-          error = 60 * 5; // Five seconds
+          error = 60 * 5;  // Five seconds
         }
       }
       if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
@@ -396,14 +397,15 @@ namespace SimpleGraphicalFrontend {
 
       ImGui::SameLine();
       if (ImGui::Button("Instruction")) {
-        if (!goto_text.empty() && !(goto_text[0] >= '0' && goto_text[0] <= '9')) {
+        if (!goto_text.empty() &&
+            !(goto_text[0] >= '0' && goto_text[0] <= '9')) {
           std::cout << "TEST" << std::endl;
           char gt = goto_text[0];
           while (local_vm->code[local_vm->ins_i] != gt) {
-              if (local_vm->step() == false) {
-                done = true;
-                break;
-              }
+            if (local_vm->step() == false) {
+              done = true;
+              break;
+            }
           }
         }
       }
@@ -424,7 +426,7 @@ namespace SimpleGraphicalFrontend {
             }
           }
         } catch (...) {
-          error = 60 * 5; // Five seconds
+          error = 60 * 5;  // Five seconds
         }
       }
       if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
