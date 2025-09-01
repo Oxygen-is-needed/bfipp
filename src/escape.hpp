@@ -99,6 +99,7 @@ namespace Unwind {
 
     sa.sa_handler = &handle_sigint;
     sa.sa_flags = SA_RESTART;
+    memset(&sa, 0, sizeof(sa));
 
     sigaction(SIGINT, &sa, nullptr);
     sigaction(SIGTERM, &sa, nullptr);

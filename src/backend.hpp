@@ -181,7 +181,9 @@ class VM {
 
     code = i.c;
   }
-  ~VM() {}
+  ~VM() {
+    delete[] buffer;
+  }
 
   bool step() {
     total_steps++;
