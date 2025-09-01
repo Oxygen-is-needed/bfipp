@@ -1,12 +1,19 @@
 CFLAGS=$(pkg-config --cflags glfw3)
 OPENGL_LINKS="-lGL $(pkg-config --static --libs glfw3)"
-LIBS="$OPENGL_LINKS"
+LIBS=""
+if [ -n "$STATIC" ]; then
+	LIBS+=" -static"
+fi
+LIBS+=" $OPENGL_LINKS"
+VERSION="v1.3.0"
 
-CXX=g++
+if [ -z "$CXX" ]; then
+	CXX=g++
+fi
 WARNINGS='-Wall -Wformat -Wextra'
 FLAGS=
 
-MAIN_MACROS="-DVERSION=\"v1.3.0-pre\" -DCXX=\"$CXX\""
+MAIN_MACROS="-DVERSION=\"$VERSION\" -DCXX=\"$CXX\""
 MAIN_DIR="src"
 MAIN_IN="$MAIN_DIR/main.cpp"
 MAIN_OUT="$MAIN_DIR/main.o"
@@ -22,24 +29,35 @@ if [ -n "$UPDATE" ]; then
 	done
 fi
 
-if [ -n "$STATIC" ]; then
-	LIBS+=" -static"
-fi
 
-
-OUT_FILE=bfi++
+OUT_NAME="bfi++"
+OUT_FILE="$OUT_NAME-$VERSION"
 OUT_DIR=pkg
 INCLUDE_DIR=include
+
+if [ -n "$STATIC" ]; then
+	OUT_FILE+="-static"
+fi
 
 set -x
 
 if [ -n "$WINDOWS" ]; then
-	OUT_FILE=bfi++.exe
 	CXX="x86_64-w64-mingw32-g++"
 	OPENGL_LINKS="-lglfw3 -lopengl32 -lgdi32"
-	LIBS="$OPENGL_LINKS -lstdc++exp -static"
+	LIBS=""
+	if [ -n "$STATIC" ]; then
+		LIBS+=" -static"
+	fi
+	LIBS+=" $OPENGL_LINKS -lstdc++exp"
 	MAIN_UPDATE=1
 	INCLUDE_DIR=include/win
+	OUT_FILE+="-windows"
+else
+	OUT_FILE+="-linux"
+fi
+OUT_FILE+="-x86_64"
+if [ -n "$WINDOWS" ]; then
+	OUT_FILE+=".exe"
 fi
 
 if [ -n "$RELEASE" ]; then
