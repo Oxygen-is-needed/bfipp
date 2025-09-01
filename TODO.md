@@ -201,13 +201,14 @@
            - [x] ADVANCE: advance to step count
            - [x] Hover descriptions
 
-- [ ] Wrap Up
-    - [ ] Check for memory leaks
-    - [ ] Update release
-    - [ ] Update README.md
-    - [ ] Detect Unused Code
-    - [ ] Look at TODO's
-    - [ ] Update Version Number
+- [x] Wrap Up
+    - [x] Check for memory leaks
+    - [x] Update release
+    - [x] Update README.md
+    - [x] Detect Unused Code
+    - [x] Look at TODO's
+    - [x] Syntax fix
+    - [x] Update Version Number
 
 # v1.4.0 - Improve Technicals
 

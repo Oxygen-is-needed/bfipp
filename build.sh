@@ -2,11 +2,13 @@ CFLAGS=$(pkg-config --cflags glfw3)
 OPENGL_LINKS="-lGL $(pkg-config --static --libs glfw3)"
 LIBS="$OPENGL_LINKS"
 
-CXX=g++
+if [ -z "$CXX" ]; then
+	CXX=g++
+fi
 WARNINGS='-Wall -Wformat -Wextra'
 FLAGS=
 
-MAIN_MACROS="-DVERSION=\"v1.3.0-pre\" -DCXX=\"$CXX\""
+MAIN_MACROS="-DVERSION=\"v1.3.0\" -DCXX=\"$CXX\""
 MAIN_DIR="src"
 MAIN_IN="$MAIN_DIR/main.cpp"
 MAIN_OUT="$MAIN_DIR/main.o"
