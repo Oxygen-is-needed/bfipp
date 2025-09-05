@@ -225,6 +225,10 @@
     - [ ] Ability to Disable a backends
     - [ ] Ability to Disable Graphics
 
+- [ ] Output
+    - [ ] Fix file output (maybe windows specific)
+    - [ ] Fix select/unselect output error at run
+
 - [ ] Main
     - [ ] Allow multiple VM's running.
     - [ ] Open menu after running.
